@@ -16,6 +16,15 @@ export default function Home() {
   const [isCapturing, setIsCapturing] = useState(false);
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [status, setStatus] = useState<{ msg: string; isError: boolean } | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  // クールダウンのカウントダウン
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(prev => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
 
   // スクリーンショット一覧を取得
   const fetchScreenshots = async () => {
@@ -91,9 +100,15 @@ export default function Home() {
         extractedDesign = extractedDesign.design;
       }
 
+      // 単数形 (table) で返してくるケースへの対応
+      if (!extractedDesign.tables && extractedDesign.table) {
+        extractedDesign.tables = Array.isArray(extractedDesign.table) ? extractedDesign.table : [extractedDesign.table];
+      }
+
       if (!extractedDesign.tables || !Array.isArray(extractedDesign.tables)) {
         console.error('Invalid design structure:', extractedDesign);
-        throw new Error('AIの返答形式が正しくありません (tablesが見つかりません)');
+        const details = extractedDesign.details ? `\n詳細:\n${extractedDesign.details.join('\n')}` : '';
+        throw new Error(`AIの返答形式が正しくありません (tablesが見つかりません)。内容: ${JSON.stringify(extractedDesign).substring(0, 100)}...${details}`);
       }
 
       setDesign(extractedDesign);
@@ -103,6 +118,7 @@ export default function Home() {
       setStatus({ msg: `❌ エラー: ${err.message}`, isError: true });
     } finally {
       setIsGenerating(false);
+      setCooldown(10); // 10秒のクールダウン
     }
   };
 
@@ -143,8 +159,8 @@ export default function Home() {
     if (!confirm(`${fields.length} 個のフィールドを順番にGUI作成します。よろしいですか？`)) return;
     for (const f of fields) {
       await handleCreateFieldGUI(f.name, f.type, 'ClubMakerによる自動作成');
-      // 次の操作まで少し待機
-      await new Promise(r => setTimeout(r, 1000));
+      // 次の操作まで少し待機（負荷軽減のため2秒に延長）
+      await new Promise(r => setTimeout(r, 2000));
     }
     setStatus({ msg: '✅ 全てのGUI作成プロセスが完了しました。', isError: false });
   };
@@ -220,10 +236,10 @@ export default function Home() {
               />
               <button
                 onClick={handleGenerate}
-                disabled={isGenerating}
+                disabled={isGenerating || cooldown > 0}
                 className="w-full mt-4 py-4 bg-white text-black font-black rounded-2xl transition-all hover:bg-slate-200 active:scale-95 shadow-xl shadow-white/5 disabled:opacity-50"
               >
-                {isGenerating ? '設計中...' : 'システムを設計する'}
+                {isGenerating ? '設計中...' : cooldown > 0 ? `待機中 (${cooldown}s)` : 'システムを設計する'}
               </button>
             </section>
           </div>

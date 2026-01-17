@@ -7,56 +7,88 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def generate_db_design(prompt):
-    api_key = os.getenv("GOOGLE_GENERATIVE_AI_API_KEY")
-    if not api_key:
+    # .env から全てのキーを取得
+    keys_str = os.getenv("GOOGLE_GENERATIVE_AI_API_KEY", "")
+    if not keys_str:
         print(json.dumps({"error": "API Key not found in .env"}))
         return
 
-    client = genai.Client(api_key=api_key)
-    
-    system_instruction = """
-    You are an expert FileMaker database architect.
-    Design a database structure based on the user's request.
-    Return only a JSON object with the following structure:
-    {
-      "tables": [
-        {
-          "name": "TableName",
-          "fields": [
-            {"name": "field_name", "type": "Text|Number|Date|Time|Timestamp|Container|Calculation|Summary"},
-            ...
-          ]
-        }
-      ]
-    }
-    Use simple, descriptive field names.
-    Types must be exactly one of: Text, Number, Date, Time, Timestamp, Container, Calculation, Summary.
-    Avoid any markdown formatting, only return raw JSON.
-    """
+    # モデル名を .env から取得 (デフォルトは gemini-2.0-flash-exp)
+    model_name = os.getenv("GOOGLE_GENERATIVE_AI_MODEL", "gemini-2.0-flash-exp")
 
-    try:
-        response = client.models.generate_content(
-            model='gemini-2.0-flash-exp',
-            contents=f"{system_instruction}\n\nUser Request: {prompt}"
-        )
-        
-        text = response.text.strip()
-        # Markdownのデコレーション(```json)を削除
-        if "```json" in text:
-            text = text.split("```json")[1].split("```")[0].strip()
-        elif "```" in text:
-            text = text.split("```")[1].split("```")[0].strip()
-        
-        # パースを確認して出力
-        json_data = json.loads(text)
-        print(json.dumps(json_data))
-        
-    except Exception as e:
-        print(json.dumps({"error": str(e)}))
+    # 空白を除去しつつリスト化
+    api_keys = [k.strip() for k in keys_str.split(",") if k.strip()]
+    
+    errors = []
+    
+    # 登録されている全キーを順番に試す
+    for i, api_key in enumerate(api_keys):
+        try:
+            client = genai.Client(api_key=api_key)
+            
+            system_instruction = """
+            You are an expert FileMaker database architect.
+            Design a database structure based on the user's request.
+            Return only a JSON object with the following structure:
+            {
+              "tables": [
+                {
+                  "name": "TableName",
+                  "fields": [
+                    {"name": "field_name", "type": "Text|Number|Date|Time|Timestamp|Container|Calculation|Summary"},
+                    ...
+                  ]
+                }
+              ]
+            }
+            Use simple, descriptive field names.
+            Types must be exactly one of: Text, Number, Date, Time, Timestamp, Container, Calculation, Summary.
+            Avoid any markdown formatting, only return raw JSON.
+            """
+
+            response = client.models.generate_content(
+                model=model_name,
+                contents=f"{system_instruction}\n\nUser Request: {prompt}"
+            )
+            
+            text = response.text.strip()
+            
+            # JSON部分を抽出
+            import re
+            json_match = re.search(r'\{.*\}', text, re.DOTALL)
+            if json_match:
+                text = json_match.group(0)
+            
+            json_data = json.loads(text)
+            
+            # 構造の補正
+            if isinstance(json_data, list):
+                json_data = {"tables": json_data}
+            elif "design" in json_data and "tables" in json_data["design"]:
+                json_data = json_data["design"]
+            
+            # 成功したらJSONを出力して終了
+            print(json.dumps(json_data))
+            return
+
+        except Exception as e:
+            err_msg = str(e)
+            errors.append(f"Key {i+1} ({model_name}): {err_msg}")
+            
+            # 429 (クォータ切れ) の場合は1.5秒待機してから次へ
+            if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
+                import time
+                time.sleep(1.5)
+            continue
+
+    # 全てのキーが失敗した場合
+    print(json.dumps({
+        "error": "All API keys failed.",
+        "details": errors
+    }))
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        # コマンドライン引数をすべて結合（空白まじりのプロンプトに対応）
         user_prompt = " ".join(sys.argv[1:])
         generate_db_design(user_prompt)
     else:
