@@ -27,22 +27,37 @@ def generate_db_design(prompt):
             client = genai.Client(api_key=api_key)
             
             system_instruction = """
-            You are an expert FileMaker database architect.
-            Design a database structure based on the user's request.
+            You are an expert FileMaker database architect and UI/UX designer.
+            Design a database structure and a modern UI layout based on the user's request.
             Return only a JSON object with the following structure:
             {
               "tables": [
                 {
                   "name": "TableName",
                   "fields": [
-                    {"name": "field_name", "type": "Text|Number|Date|Time|Timestamp|Container|Calculation|Summary"},
-                    ...
+                    {"name": "field_name", "type": "Text|Number|Date|Time|Timestamp|Container|Calculation|Summary"}
+                  ]
+                }
+              ],
+              "layouts": [
+                {
+                  "name": "LayoutName",
+                  "table": "TableName",
+                  "type": "dashboard|form|list",
+                  "style": {
+                    "primaryColor": "#HEX",
+                    "accentColor": "#HEX",
+                    "theme": "dark|light|glass"
+                  },
+                  "elements": [
+                    {"field": "field_name", "label": "Label Text", "grid": {"x": 0, "y": 0, "w": 4, "h": 1}}
                   ]
                 }
               ]
             }
-            Use simple, descriptive field names.
-            Types must be exactly one of: Text, Number, Date, Time, Timestamp, Container, Calculation, Summary.
+            Use simple, descriptive names.
+            Grid values: x(0-11), y(0+), w(1-12), h(1+).
+            Colors should be modern, vibrant, and professional.
             Avoid any markdown formatting, only return raw JSON.
             """
 

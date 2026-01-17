@@ -11,7 +11,11 @@ const PRESET_PROMPT = `夜店クラブの「伝票・売上管理」ミニマム
 export default function Home() {
   const [prompt, setPrompt] = useState(PRESET_PROMPT);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [design, setDesign] = useState<{ tables: FMTable[] } | null>(null);
+  const [viewMode, setViewMode] = useState<'schema' | 'layout'>('schema');
+  const [design, setDesign] = useState<{
+    tables: FMTable[],
+    layouts?: any[]
+  } | null>(null);
   const [isLaunching, setIsLaunching] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [screenshots, setScreenshots] = useState<string[]>([]);
@@ -105,6 +109,11 @@ export default function Home() {
         extractedDesign.tables = Array.isArray(extractedDesign.table) ? extractedDesign.table : [extractedDesign.table];
       }
 
+      if (!extractedDesign.tables && extractedDesign.layouts) {
+        // layoutsはあるがtablesがない、という特殊ケースへの防御
+        extractedDesign.tables = [];
+      }
+
       if (!extractedDesign.tables || !Array.isArray(extractedDesign.tables)) {
         console.error('Invalid design structure:', extractedDesign);
         const details = extractedDesign.details ? `\n詳細:\n${extractedDesign.details.join('\n')}` : '';
@@ -112,6 +121,10 @@ export default function Home() {
       }
 
       setDesign(extractedDesign);
+      // レイアウトがあれば自動的にレイアウト表示へ
+      if (extractedDesign.layouts?.length > 0) {
+        setViewMode('layout');
+      }
       setStatus({ msg: '✅ 設計図が完成しました。FileMakerに反映できます。', isError: false });
     } catch (err: any) {
       console.error(err);
@@ -245,73 +258,149 @@ export default function Home() {
           </div>
 
           {/* Center: Schema Preview */}
-          <div className="col-span-12 lg:col-span-6 overflow-y-auto custom-scrollbar">
-            {!design ? (
-              <div className="h-full bg-white/[0.02] border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center p-12 text-slate-600">
-                <div className="text-8xl mb-6 opacity-20">📐</div>
-                <p className="text-xl font-bold opacity-40">設計案がここに表示されます</p>
-                <p className="text-sm opacity-30 mt-2">左のパネルから指示を入力してください</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {(!design?.tables || design.tables.length === 0) ? (
-                  <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-12 text-center text-slate-500">
-                    <p className="text-xl font-bold">テーブル構造が見つかりませんでした</p>
-                    <p className="text-sm mt-2">AIの出力を解析できませんでした。もう一度指示を変えて試してみてください。</p>
-                  </div>
-                ) : (
-                  design.tables.map((table) => (
-                    <div key={table.name} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-                      <div className="bg-white/5 p-6 flex justify-between items-center border-b border-white/5">
-                        <div>
-                          <h3 className="text-2xl font-black text-purple-400">
-                            {table.name}
-                          </h3>
-                          <p className="text-[10px] text-slate-500 uppercase font-bold mt-1 tracking-widest">Database Table</p>
-                        </div>
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => copyToFM(generateFieldsXML(table.fields))}
-                            className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-bold transition-all active:scale-95"
-                          >
-                            フィールドをコピー
-                          </button>
-                          <button
-                            onClick={() => handleBatchCreateGUI(table.fields)}
-                            className="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition-all active:scale-95"
-                          >
-                            一括GUI作成
-                          </button>
-                        </div>
-                      </div>
-                      <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {table.fields.map((field) => (
-                          <div key={field.name} className="group bg-black/40 border border-white/5 p-4 rounded-2xl hover:border-purple-500/50 transition-all duration-300">
-                            <div className="flex justify-between items-start mb-2">
-                              <span className="text-[10px] px-2 py-0.5 bg-white/10 text-slate-400 rounded-full font-bold uppercase">
-                                {field.type}
-                              </span>
-                            </div>
-                            <div className="font-mono text-lg font-bold text-slate-200 group-hover:text-white transition-colors flex justify-between items-center">
-                              {field.name}
-                              <button
-                                onClick={() => handleCreateFieldGUI(field.name, field.type)}
-                                className="opacity-0 group-hover:opacity-100 p-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-all text-[10px]"
-                                title="単体GUI作成"
-                              >
-                                🏗️
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))
-                )}
+          <div className="col-span-12 lg:col-span-6 flex flex-col gap-6 overflow-hidden">
+            {design && (
+              <div className="flex gap-4 p-1 bg-black/40 border border-white/5 rounded-2xl w-fit">
+                <button
+                  onClick={() => setViewMode('schema')}
+                  className={`px-6 py-2 rounded-xl text-xs font-black tracking-widest uppercase transition-all ${viewMode === 'schema' ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  Schema
+                </button>
+                <button
+                  onClick={() => setViewMode('layout')}
+                  className={`px-6 py-2 rounded-xl text-xs font-black tracking-widest uppercase transition-all ${viewMode === 'layout' ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  Modern Layout
+                </button>
               </div>
             )}
-          </div>
 
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              {!design ? (
+                <div className="h-full bg-white/[0.02] border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center p-12 text-slate-600">
+                  <div className="text-8xl mb-6 opacity-20">📐</div>
+                  <p className="text-xl font-bold opacity-40">設計案がここに表示されます</p>
+                  <p className="text-sm opacity-30 mt-2">左のパネルから指示を入力してください</p>
+                </div>
+              ) : viewMode === 'schema' ? (
+                <div className="space-y-6">
+                  {(!design?.tables || design.tables.length === 0) ? (
+                    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-12 text-center text-slate-500">
+                      <p className="text-xl font-bold">テーブル構造が見つかりませんでした</p>
+                      <p className="text-sm mt-2">AIの出力を解析できませんでした。もう一度指示を変えて試してみてください。</p>
+                    </div>
+                  ) : (
+                    design.tables.map((table) => (
+                      <div key={table.name} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+                        <div className="bg-white/5 p-6 flex justify-between items-center border-b border-white/5">
+                          <div>
+                            <h3 className="text-2xl font-black text-purple-400">
+                              {table.name}
+                            </h3>
+                            <p className="text-[10px] text-slate-500 uppercase font-bold mt-1 tracking-widest">Database Table</p>
+                          </div>
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => copyToFM(generateFieldsXML(table.fields))}
+                              className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-bold transition-all active:scale-95"
+                            >
+                              フィールドをコピー
+                            </button>
+                            <button
+                              onClick={() => handleBatchCreateGUI(table.fields)}
+                              className="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition-all active:scale-95"
+                            >
+                              一括GUI作成
+                            </button>
+                          </div>
+                        </div>
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {table.fields.map((field) => (
+                            <div key={field.name} className="group bg-black/40 border border-white/5 p-4 rounded-2xl hover:border-purple-500/50 transition-all duration-300">
+                              <div className="flex justify-between items-start mb-2">
+                                <span className="text-[10px] px-2 py-0.5 bg-white/10 text-slate-400 rounded-full font-bold uppercase">
+                                  {field.type}
+                                </span>
+                              </div>
+                              <div className="font-mono text-lg font-bold text-slate-200 group-hover:text-white transition-colors flex justify-between items-center">
+                                {field.name}
+                                <button
+                                  onClick={() => handleCreateFieldGUI(field.name, field.type)}
+                                  className="opacity-0 group-hover:opacity-100 p-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-all text-[10px]"
+                                  title="単体GUI作成"
+                                >
+                                  🏗️
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-12 pb-20">
+                  {design.layouts?.map((lyt: any, idx: number) => (
+                    <div key={idx} className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group">
+                      {/* Decorative Background */}
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 blur-[100px] pointer-events-none" />
+
+                      <div className="relative z-10">
+                        <div className="flex justify-between items-start mb-10">
+                          <div>
+                            <h3 className="text-3xl font-black text-white tracking-tight">
+                              {lyt.name}
+                            </h3>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest text-slate-400 border border-white/5">
+                                {lyt.type}
+                              </span>
+                              <span className="text-slate-500 text-xs">for {lyt.table}</span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <div className="w-8 h-8 rounded-full shadow-inner border border-white/10" style={{ backgroundColor: lyt.style?.primaryColor }}></div>
+                            <div className="w-8 h-8 rounded-full shadow-inner border border-white/10" style={{ backgroundColor: lyt.style?.accentColor }}></div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-12 gap-4 bg-white/[0.02] border border-white/5 p-6 rounded-3xl min-h-[400px]">
+                          {lyt.elements?.map((el: any, i: number) => (
+                            <div
+                              key={i}
+                              style={{
+                                gridColumn: `span ${el.grid.w}`,
+                                gridRow: `span ${el.grid.h}`,
+                              }}
+                              className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/30 transition-all group/el flex flex-col justify-center"
+                            >
+                              <label className="text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-tighter">
+                                {el.label}
+                              </label>
+                              <div className="h-10 bg-black/20 rounded-lg border border-white/5 flex items-center px-4 text-xs text-slate-400 italic">
+                                {el.field}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {(!design.layouts || design.layouts.length === 0) && (
+                    <div className="h-64 flex flex-col items-center justify-center text-slate-500 opacity-60">
+                      <div className="text-6xl mb-4">✨</div>
+                      <p className="text-xl font-bold italic text-center">
+                        レイアウト案が生成されませんでした<br />
+                        <span className="text-sm font-normal not-italic mt-2 block">指示を詳しくして再生成をお試しください</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
           {/* Right: Assets & History */}
           <div className="col-span-12 lg:col-span-3 flex flex-col gap-6 overflow-hidden text-sm">
             <section className="flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex flex-col shadow-xl overflow-hidden">
