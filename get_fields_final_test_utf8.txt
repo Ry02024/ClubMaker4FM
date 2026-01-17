@@ -1,0 +1,25 @@
+﻿.\.venv\Scripts\pytho
+n.exe : Found priorit
+y dialog as child: 「N
+ightClub2」のデータベースの管理
+発生場所 行:1 文字:1
++ .\.venv\Scripts\pyt
+hon.exe scripts\get_f
+m_fields.py > get_fie
+lds_fina ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Found p   
+ riority ...lub2」    
+のデータベースの管理:Strin    g
+) [], RemoteExc    ep
+tion
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+{"success": true, "fields": [{"name": "StaffID", "type": "テキスト"}, {"name": "StaffName", "type": "テキスト"}, {"name": "Role", "type": "テキスト"}, {"name": "ContactInfo", "type": "テキスト"}, {"name": "スタッフ_ID", "type": "テキスト"}, {"name": "スタッフ_ID_主キー", "type": "テキスト"}]}

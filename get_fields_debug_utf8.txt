@@ -1,0 +1,20 @@
+﻿.\.venv\Scripts\python.exe
+ : Found dialog as top win
+dow: レイアウトの管理 (NightClub2)
+発生場所 行:1 文字:1
++ .\.venv\Scripts\python.e
+xe scripts\get_fm_fields.p
+y > get_fields_debu ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpe    cified: 
+(Found d    ialog as...管理 
+(N    ightClub2):Strin    
+g) [], RemoteExc    eption
+    + FullyQualified    Er
+rorId : Native    CommandE
+rror
+ 
+{"success": true, "fields": [{"name": "NightClub2", "type": "NightClub2"}, {"name": "レイアウト 2", "type": "NightClub2"}]}

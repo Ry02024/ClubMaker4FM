@@ -1,0 +1,2 @@
+﻿Dumping hierarchy for: 「NightClub2」のデータベースの管理
+[HwndWrapper[DefaultDomain;;c73bfc99-5a22-47d7-aa8e-f224c39a5fae]] '「NightClub2」のデータベースの管理'

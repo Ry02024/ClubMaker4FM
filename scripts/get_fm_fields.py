@@ -1,39 +1,105 @@
 from pywinauto import Application, Desktop
-import sys
 import json
+import sys
+import time
+
+def find_manage_database_dialog(app):
+    """FileMakerの「データベースの管理」ダイアログを探す(正確なマッチング)"""
+    # 優先キーワード
+    priority_keywords = ["データベースの管理", "Manage Database"]
+    fallback_keywords = ["Database", "の管理"]
+    exclude_keywords = ["レイアウト", "Layout", "スクリプト", "Script"]
+    
+    # 1. 最上位ウィンドウから優先キーワードで探す
+    windows = app.windows()
+    for w in windows:
+        title = w.window_text()
+        if any(pk in title for pk in priority_keywords):
+            print(f"Found priority dialog as top window: {title}", file=sys.stderr)
+            return w
+
+    # 2. メインウィンドウの子から優先キーワードで探す
+    for w in windows:
+        for child in w.children():
+            title = child.window_text()
+            if any(pk in title for pk in priority_keywords):
+                print(f"Found priority dialog as child: {title}", file=sys.stderr)
+                return child
+
+    # 3. フォールバック (ただし除外キーワードを含むものは避ける)
+    for w in windows:
+        title = w.window_text()
+        if any(fk in title for fk in fallback_keywords):
+            if not any(ek in title for ek in exclude_keywords):
+                print(f"Found fallback dialog as top window: {title}", file=sys.stderr)
+                return w
+                
+    for w in windows:
+        for child in w.children():
+            title = child.window_text()
+            if any(fk in title for fk in fallback_keywords):
+                if not any(ek in title for ek in exclude_keywords):
+                    print(f"Found fallback dialog as child: {title}", file=sys.stderr)
+                    return child
+                    
+    return None
 
 def get_existing_fields():
-    """『データベースの管理』ダイアログから現在のフィールド一覧を取得する"""
+    fields = []
     try:
-        # Desktop経由でウィンドウを探す
-        all_windows = Desktop(backend="win32").windows()
-        dialogs = [w for w in all_windows if w.is_visible() and ("データベースの管理" in w.window_text() or "Manage Database" in w.window_text())]
-        
-        if not dialogs:
+        try:
+            app = Application(backend="uia").connect(path="FileMaker Pro.exe")
+        except:
+            return {"success": False, "error": "Could not connect to FileMaker Pro."}
+
+        dialog = find_manage_database_dialog(app)
+
+        if not dialog:
             return {"success": False, "error": "Manage Database dialog not found."}
-            
-        target = dialogs[0]
-        # ListViewを探す (通常、フィールド一覧は1番目のListView)
-        list_view = target.child_window(class_name="SysListView32")
+
+        dialog_spec = app.window(handle=dialog.handle)
+        dialog_spec.set_focus()
+
+        # フィールド一覧の特定を強化
+        # auto_id または名称で探す
+        field_list = dialog_spec.child_window(auto_id="IDC_DEFFIELDS_FIELD_LIST", control_type="DataGrid")
         
-        if not list_view.exists():
-            return {"success": False, "error": "Field List View not found."}
-            
-        # 項目を取得
-        items = list_view.texts()
-        # ListViewのtexts()は[ヘッダー1, ヘッダー2, ..., 行1列1, 行1列2, ...] という形式
-        # 日本語版では: [フィールド名, タイプ, オプション/コメント, ...]
+        if not field_list.exists():
+            # DataGridを全探索
+            grids = dialog_spec.descendants(control_type="DataGrid")
+            if grids:
+                # 複数のDataGridがある場合、より大きい方を選択するなどのロジックも検討できるが、
+                # 通常は1つ
+                field_list = grids[0]
+            else:
+                return {"success": False, "error": "Field list (DataGrid) not found."}
+
+        items = field_list.descendants(control_type="DataItem")
         
-        fields = []
-        # ヘッダーが3つと仮定
-        header_count = 3
-        for i in range(header_count, len(items), header_count):
-            if i < len(items):
-                fields.append(items[i]) # フィールド名
+        for item_wrapper in items:
+            cells = item_wrapper.children()
+            if len(cells) >= 2:
+                name_text = ""
+                type_text = ""
                 
+                # 名前 (1列目)
+                name_texts = cells[0].descendants(control_type="Text")
+                if name_texts:
+                    name_text = name_texts[0].window_text()
+                
+                # タイプ (2列目)
+                type_texts = cells[1].descendants(control_type="Text")
+                if type_texts:
+                    type_text = type_texts[0].window_text()
+                
+                if name_text:
+                    fields.append({"name": name_text, "type": type_text})
+
         return {"success": True, "fields": fields}
+
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        import traceback
+        return {"success": False, "error": str(e), "traceback": traceback.format_exc()}
 
 if __name__ == "__main__":
     result = get_existing_fields()

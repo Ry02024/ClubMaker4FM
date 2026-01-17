@@ -11,7 +11,7 @@ const PRESET_PROMPT = `夜店クラブの「伝票・売上管理」ミニマム
 export default function Home() {
   const [prompt, setPrompt] = useState(PRESET_PROMPT);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [viewMode, setViewMode] = useState<'schema' | 'layout'>('schema');
+  const [viewMode, setViewMode] = useState<'schema' | 'layout' | 'fixer'>('schema');
   const [design, setDesign] = useState<{
     tables: FMTable[],
     layouts?: any[],
@@ -22,6 +22,14 @@ export default function Home() {
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [status, setStatus] = useState<{ msg: string; isError: boolean } | null>(null);
   const [cooldown, setCooldown] = useState(0);
+
+  // フィールド修整用のstate
+  const [currentFields, setCurrentFields] = useState<{ name: string, type: string }[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [selectedFixes, setSelectedFixes] = useState<Set<number>>(new Set());
+  const [isLoadingFields, setIsLoadingFields] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isFixing, setIsFixing] = useState(false);
 
   // クールダウンのカウントダウン
   useEffect(() => {
@@ -219,6 +227,108 @@ export default function Home() {
     setStatus({ msg: '✅ 全てのGUI生成プロセスが完了し、保存されました。', isError: false });
   };
 
+  // フィールド修整用ハンドラー
+  const handleLoadCurrentFields = async () => {
+    setIsLoadingFields(true);
+    setStatus({ msg: 'FileMakerから現在のフィールドを読み取っています...', isError: false });
+    try {
+      const res = await fetch('/api/get-fm-fields');
+      const data = await res.json();
+      if (data.success) {
+        setCurrentFields(data.fields);
+        setSuggestions([]);
+        setSelectedFixes(new Set());
+        setStatus({ msg: `✅ ${data.fields.length} 件のフィールドを読み取りました`, isError: false });
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (err: any) {
+      setStatus({ msg: `❌ 読み取りエラー: ${err.message}`, isError: true });
+    } finally {
+      setIsLoadingFields(false);
+    }
+  };
+
+  const handleSuggestFixes = async () => {
+    if (currentFields.length === 0) {
+      setStatus({ msg: '先にフィールドを読み取ってください', isError: true });
+      return;
+    }
+    setIsSuggesting(true);
+    setStatus({ msg: 'AIが最適化を分析中...', isError: false });
+    try {
+      const res = await fetch('/api/suggest-field-fix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentFields, context: prompt }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuggestions(data.suggestions);
+        // 変更が推奨されている項目を自動選択
+        const autoSelect = new Set<number>();
+        data.suggestions.forEach((s: any, i: number) => {
+          if (s.should_fix) autoSelect.add(i);
+        });
+        setSelectedFixes(autoSelect);
+        setStatus({ msg: `✅ ${data.suggestions.length} 件の提案を取得しました`, isError: false });
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (err: any) {
+      setStatus({ msg: `❌ AI提案エラー: ${err.message}`, isError: true });
+    } finally {
+      setIsSuggesting(false);
+    }
+  };
+
+  const handleBatchFix = async () => {
+    if (selectedFixes.size === 0) {
+      setStatus({ msg: '修整する項目を選択してください', isError: true });
+      return;
+    }
+    if (!confirm(`⚠️ ${selectedFixes.size} 件のフィールドを修整します。\n\nこの操作は元に戻せません。\nFileMakerのバックアップを取っていますか？`)) {
+      return;
+    }
+    setIsFixing(true);
+    setStatus({ msg: `${selectedFixes.size} 件のフィールドを修整中...`, isError: false });
+    try {
+      const fixList = Array.from(selectedFixes).map(i => ({
+        old_name: suggestions[i].old_name,
+        new_name: suggestions[i].new_name,
+        new_type: suggestions[i].new_type !== suggestions[i].old_type ? suggestions[i].new_type : null,
+        comment: suggestions[i].comment || 'ClubMaker最適化'
+      }));
+      const res = await fetch('/api/field-fix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fixes: fixList }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStatus({ msg: `✅ ${data.succeeded}/${data.total} 件の修整が完了しました`, isError: false });
+        // フィールドを再読み込み
+        handleLoadCurrentFields();
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (err: any) {
+      setStatus({ msg: `❌ 修整エラー: ${err.message}`, isError: true });
+    } finally {
+      setIsFixing(false);
+    }
+  };
+
+  const toggleFix = (index: number) => {
+    const newSet = new Set(selectedFixes);
+    if (newSet.has(index)) {
+      newSet.delete(index);
+    } else {
+      newSet.add(index);
+    }
+    setSelectedFixes(newSet);
+  };
+
   return (
     <main className="min-h-screen bg-[#0a0a0c] text-slate-100 p-6 font-sans selection:bg-purple-500/30">
       {/* 背景装飾 */}
@@ -333,19 +443,39 @@ export default function Home() {
                   onClick={() => setViewMode('layout')}
                   className={`px-6 py-2 rounded-xl text-xs font-black tracking-widest uppercase transition-all ${viewMode === 'layout' ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-slate-500 hover:text-slate-300'}`}
                 >
-                  Modern Layout
+                  Layout
+                </button>
+                <button
+                  onClick={() => setViewMode('fixer')}
+                  className={`px-6 py-2 rounded-xl text-xs font-black tracking-widest uppercase transition-all ${viewMode === 'fixer' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/20' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  🔧 修整
+                </button>
+              </div>
+            )}
+            {!design && (
+              <div className="flex gap-4 p-1 bg-black/40 border border-white/5 rounded-2xl w-fit">
+                <button
+                  onClick={() => setViewMode('fixer')}
+                  className={`px-6 py-2 rounded-xl text-xs font-black tracking-widest uppercase transition-all ${viewMode === 'fixer' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/20' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  🔧 既存フィールド修整
                 </button>
               </div>
             )}
 
             <div className="flex-1 overflow-y-auto custom-scrollbar">
-              {!design ? (
+              {/* No Design Yet */}
+              {!design && viewMode !== 'fixer' && (
                 <div className="h-full bg-white/[0.02] border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center p-12 text-slate-600">
                   <div className="text-8xl mb-6 opacity-20">📐</div>
                   <p className="text-xl font-bold opacity-40">設計案がここに表示されます</p>
                   <p className="text-sm opacity-30 mt-2">左のパネルから指示を入力してください</p>
                 </div>
-              ) : viewMode === 'schema' ? (
+              )}
+
+              {/* Schema View */}
+              {design && viewMode === 'schema' && (
                 <div className="space-y-6">
                   {(!design?.tables || design.tables.length === 0) ? (
                     <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-12 text-center text-slate-500">
@@ -402,104 +532,201 @@ export default function Home() {
                     ))
                   )}
                 </div>
-              ) : (
-                <div className="space-y-12 pb-20">
-                  {design.layouts?.map((lyt: any, idx: number) => (
-                    <div key={idx} className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group">
-                      {/* Decorative Background */}
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 blur-[100px] pointer-events-none" />
+              ) : viewMode === 'layout' ? (
+              <div className="space-y-12 pb-20">
+                {design.layouts?.map((lyt: any, idx: number) => (
+                  <div key={idx} className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group">
+                    {/* Decorative Background */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 blur-[100px] pointer-events-none" />
 
-                      <div className="relative z-10">
-                        <div className="flex justify-between items-start mb-10">
-                          <div>
-                            <h3 className="text-3xl font-black text-white tracking-tight">
-                              {lyt.name}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-2">
-                              <span className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest text-slate-400 border border-white/5">
-                                {lyt.type}
-                              </span>
-                              <span className="text-slate-500 text-xs">for {lyt.table}</span>
-                            </div>
-                          </div>
-                          <div className="flex gap-4 items-center">
-                            <button
-                              onClick={() => copyToFM(generateLayoutXML(lyt))}
-                              className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-2xl text-xs font-bold shadow-lg shadow-purple-500/20 transition-all active:scale-95"
-                            >
-                              レイアウトXMLをコピー
-                            </button>
-                            <div className="flex gap-2">
-                              <div className="w-8 h-8 rounded-full shadow-inner border border-white/10" style={{ backgroundColor: lyt.style?.primaryColor }}></div>
-                              <div className="w-8 h-8 rounded-full shadow-inner border border-white/10" style={{ backgroundColor: lyt.style?.accentColor }}></div>
-                            </div>
+                    <div className="relative z-10">
+                      <div className="flex justify-between items-start mb-10">
+                        <div>
+                          <h3 className="text-3xl font-black text-white tracking-tight">
+                            {lyt.name}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest text-slate-400 border border-white/5">
+                              {lyt.type}
+                            </span>
+                            <span className="text-slate-500 text-xs">for {lyt.table}</span>
                           </div>
                         </div>
-
-                        <div className="grid grid-cols-12 gap-4 bg-white/[0.02] border border-white/5 p-6 rounded-3xl min-h-[400px]">
-                          {lyt.elements?.map((el: any, i: number) => (
-                            <div
-                              key={i}
-                              style={{
-                                gridColumn: `span ${el.grid.w}`,
-                                gridRow: `span ${el.grid.h}`,
-                              }}
-                              className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/30 transition-all group/el flex flex-col justify-center"
-                            >
-                              <label className="text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-tighter">
-                                {el.label}
-                              </label>
-                              <div className="h-10 bg-black/20 rounded-lg border border-white/5 flex items-center px-4 text-xs text-slate-400 italic">
-                                {el.field}
-                              </div>
-                            </div>
-                          ))}
+                        <div className="flex gap-4 items-center">
+                          <button
+                            onClick={() => copyToFM(generateLayoutXML(lyt))}
+                            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-2xl text-xs font-bold shadow-lg shadow-purple-500/20 transition-all active:scale-95"
+                          >
+                            レイアウトXMLをコピー
+                          </button>
+                          <div className="flex gap-2">
+                            <div className="w-8 h-8 rounded-full shadow-inner border border-white/10" style={{ backgroundColor: lyt.style?.primaryColor }}></div>
+                            <div className="w-8 h-8 rounded-full shadow-inner border border-white/10" style={{ backgroundColor: lyt.style?.accentColor }}></div>
+                          </div>
                         </div>
                       </div>
+
+                      <div className="grid grid-cols-12 gap-4 bg-white/[0.02] border border-white/5 p-6 rounded-3xl min-h-[400px]">
+                        {lyt.elements?.map((el: any, i: number) => (
+                          <div
+                            key={i}
+                            style={{
+                              gridColumn: `span ${el.grid.w}`,
+                              gridRow: `span ${el.grid.h}`,
+                            }}
+                            className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/30 transition-all group/el flex flex-col justify-center"
+                          >
+                            <label className="text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-tighter">
+                              {el.label}
+                            </label>
+                            <div className="h-10 bg-black/20 rounded-lg border border-white/5 flex items-center px-4 text-xs text-slate-400 italic">
+                              {el.field}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                  {(!design.layouts || design.layouts.length === 0) && (
-                    <div className="h-64 flex flex-col items-center justify-center text-slate-500 opacity-60">
-                      <div className="text-6xl mb-4">✨</div>
-                      <p className="text-xl font-bold italic text-center">
-                        レイアウト案が生成されませんでした<br />
-                        <span className="text-sm font-normal not-italic mt-2 block">指示を詳しくして再生成をお試しください</span>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-          {/* Right: Assets & History */}
-          <div className="col-span-12 lg:col-span-3 flex flex-col gap-6 overflow-hidden text-sm">
-            <section className="flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex flex-col shadow-xl overflow-hidden">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-pink-500 rounded-full"></span>
-                キャプチャ履歴
-              </h2>
-              <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-                {screenshots.length === 0 ? (
-                  <div className="h-40 flex flex-col items-center justify-center text-slate-500 opacity-60 italic">
-                    画像がありません
                   </div>
-                ) : (
-                  screenshots.map((src, i) => (
-                    <div key={i} className="group relative aspect-video bg-black/40 rounded-xl overflow-hidden border border-white/5 hover:border-pink-500/50 transition-all cursor-pointer shadow-lg">
-                      <img src={src} alt="Capture" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                        <span className="text-[10px] font-bold text-white truncate w-full">{src.split('/').pop()}</span>
-                      </div>
-                    </div>
-                  ))
+                ))}
+                {(!design.layouts || design.layouts.length === 0) && (
+                  <div className="h-64 flex flex-col items-center justify-center text-slate-500 opacity-60">
+                    <div className="text-6xl mb-4">✨</div>
+                    <p className="text-xl font-bold italic text-center">
+                      レイアウト案が生成されませんでした<br />
+                      <span className="text-sm font-normal not-italic mt-2 block">指示を詳しくして再生成をお試しください</span>
+                    </p>
+                  </div>
                 )}
               </div>
-            </section>
+              ) : viewMode === 'fixer' ? (
+              <div className="space-y-6">
+                {/* Field Fixer Header */}
+                <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-3xl p-6">
+                  <h3 className="text-xl font-black text-orange-400 mb-2">🔧 既存フィールド修整ツール</h3>
+                  <p className="text-sm text-slate-400 mb-4">FileMakerの既存フィールドを読み取り、AIが最適な名前・型を提案します。</p>
+
+                  <div className="flex gap-3 flex-wrap">
+                    <button
+                      onClick={handleLoadCurrentFields}
+                      disabled={isLoadingFields}
+                      className="px-5 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+                    >
+                      {isLoadingFields ? '読み取り中...' : '📥 フィールドを読み取る'}
+                    </button>
+                    <button
+                      onClick={handleSuggestFixes}
+                      disabled={isSuggesting || currentFields.length === 0}
+                      className="px-5 py-2 bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+                    >
+                      {isSuggesting ? 'AI分析中...' : '🤖 AIに最適化を提案させる'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Comparison Table */}
+                {suggestions.length > 0 && (
+                  <div className="bg-black/40 border border-white/10 rounded-3xl overflow-hidden">
+                    <div className="grid grid-cols-12 gap-2 p-4 bg-white/5 border-b border-white/10 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                      <div className="col-span-4">現在のフィールド</div>
+                      <div className="col-span-5">理想（AI提案）</div>
+                      <div className="col-span-3 text-center">アクション</div>
+                    </div>
+
+                    <div className="divide-y divide-white/5 max-h-[400px] overflow-y-auto custom-scrollbar">
+                      {suggestions.map((s, i) => (
+                        <div key={i} className={`grid grid-cols-12 gap-2 p-4 items-center transition-all ${selectedFixes.has(i) ? 'bg-orange-500/10' : 'hover:bg-white/5'}`}>
+                          <div className="col-span-4">
+                            <div className="font-mono text-sm text-slate-300">{s.old_name}</div>
+                            <div className="text-[10px] text-slate-500">{s.old_type}</div>
+                          </div>
+                          <div className="col-span-5">
+                            <div className={`font-mono text-sm ${s.old_name !== s.new_name ? 'text-green-400' : 'text-slate-400'}`}>
+                              {s.new_name}
+                            </div>
+                            <div className={`text-[10px] ${s.old_type !== s.new_type ? 'text-green-400' : 'text-slate-500'}`}>
+                              {s.new_type}
+                            </div>
+                            {s.comment && (
+                              <div className="text-[9px] text-slate-600 mt-1 italic">{s.comment}</div>
+                            )}
+                          </div>
+                          <div className="col-span-3 flex justify-center">
+                            <button
+                              onClick={() => toggleFix(i)}
+                              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedFixes.has(i)
+                                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
+                                : 'bg-white/10 text-slate-400 hover:bg-white/20'
+                                }`}
+                            >
+                              {selectedFixes.has(i) ? '✓ 修整' : 'スキップ'}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Batch Fix Button */}
+                    <div className="p-4 bg-white/5 border-t border-white/10 flex justify-between items-center">
+                      <div className="text-sm text-slate-400">
+                        <span className="text-orange-400 font-bold">{selectedFixes.size}</span> 件を修整対象に選択中
+                      </div>
+                      <button
+                        onClick={handleBatchFix}
+                        disabled={isFixing || selectedFixes.size === 0}
+                        className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 text-white rounded-2xl font-bold shadow-lg shadow-orange-500/30 transition-all active:scale-95 disabled:opacity-50"
+                      >
+                        {isFixing ? '修整中...' : `🔧 ${selectedFixes.size}件を一括修整`}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Current Fields List (before AI suggestions) */}
+                {currentFields.length > 0 && suggestions.length === 0 && (
+                  <div className="bg-black/40 border border-white/10 rounded-3xl p-6">
+                    <h4 className="text-sm font-bold text-slate-400 mb-4">読み取ったフィールド ({currentFields.length}件)</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {currentFields.map((f, i) => (
+                        <div key={i} className="bg-white/5 rounded-xl p-3 flex justify-between items-center">
+                          <span className="font-mono text-sm text-slate-300">{f.name}</span>
+                          <span className="text-[10px] text-slate-500 bg-black/30 px-2 py-1 rounded-full">{f.type}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              ) : null}
+            </div>
+            {/* Right: Assets & History */}
+            <div className="col-span-12 lg:col-span-3 flex flex-col gap-6 overflow-hidden text-sm">
+              <section className="flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex flex-col shadow-xl overflow-hidden">
+                <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-pink-500 rounded-full"></span>
+                  キャプチャ履歴
+                </h2>
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                  {screenshots.length === 0 ? (
+                    <div className="h-40 flex flex-col items-center justify-center text-slate-500 opacity-60 italic">
+                      画像がありません
+                    </div>
+                  ) : (
+                    screenshots.map((src, i) => (
+                      <div key={i} className="group relative aspect-video bg-black/40 rounded-xl overflow-hidden border border-white/5 hover:border-pink-500/50 transition-all cursor-pointer shadow-lg">
+                        <img src={src} alt="Capture" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                          <span className="text-[10px] font-bold text-white truncate w-full">{src.split('/').pop()}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </section>
+            </div>
           </div>
         </div>
-      </div>
 
-      <style jsx global>{`
+        <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }

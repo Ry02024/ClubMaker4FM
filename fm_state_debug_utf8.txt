@@ -1,0 +1,471 @@
+﻿Searching for all windows in FileMaker process (UIA)...
+
+--- Found Window: 'NightClub2' [FMPRO22.0APP] ---
+Found Dialog as child: '縲君ightClub2縲阪・繝・・繧ｿ繝吶・繧ｹ縺ｮ邂｡逅・
+Control Identifiers:
+
+Dialog - '縲君ightClub2縲阪・繝・・繧ｿ繝吶・繧ｹ縺ｮ邂｡逅・    (L411, T282, R1558, B1064)
+['Dialog', '縲君ightClub2縲阪・繝・・繧ｿ繝吶・繧ｹ縺ｮ邂｡逅・, '縲君ightClub2縲阪・繝・・繧ｿ繝吶・繧ｹ縺ｮ邂｡逅・ialog']
+child_window(title="縲君ightClub2縲阪・繝・・繧ｿ繝吶・繧ｹ縺ｮ邂｡逅・, control_type="Window")
+   | 
+   | TitleBar - ''    (L422, T285, R1547, B327)
+   | ['TitleBar']
+   |    | 
+   |    | Button - '繧ｳ繝ｳ繝・く繧ｹ繝・繝倥Ν繝・    (L1406, T283, R1477, B327)
+   |    | ['Button', '繧ｳ繝ｳ繝・く繧ｹ繝・繝倥Ν繝・, '繧ｳ繝ｳ繝・く繧ｹ繝・繝倥Ν繝唯utton', 'Button0', 'Button1']
+   |    | child_window(title="繧ｳ繝ｳ繝・く繧ｹ繝・繝倥Ν繝・, control_type="Button")
+   |    | 
+   |    | Button - '髢峨§繧・    (L1477, T283, R1548, B327)
+   |    | ['Button2', '髢峨§繧毅utton', '髢峨§繧・]
+   |    | child_window(title="髢峨§繧・, control_type="Button")
+   | 
+   | Button - '蜊ｰ蛻ｷ(P)...'    (L437, T1005, R550, B1038)
+   | ['Button3', '蜊ｰ蛻ｷ(P)...', '蜊ｰ蛻ｷ(P)...Button']
+   | child_window(title="蜊ｰ蛻ｷ(P)...", auto_id="ID_APPLY_NOW", control_type="Button")
+   |    | 
+   |    | Static - '蜊ｰ蛻ｷ(_P)...'    (L459, T1009, R527, B1034)
+   |    | ['蜊ｰ蛻ｷ(_P)...', 'Static', '蜊ｰ蛻ｷ(_P)...Static', 'Static0', 'Static1']
+   |    | child_window(title="蜊ｰ蛻ｷ(_P)...", control_type="Text")
+   | 
+   | Button - ''    (L1171, T1005, R1283, B1038)
+   | ['蜑企勁(_L)Button', 'Button4', '蜊ｰ蛻ｷ(_P)...Button']
+   | child_window(auto_id="IDHELP", control_type="Button")
+   |    | 
+   |    | Static - ''    (L0, T0, R0, B0)
+   |    | ['Static2']
+   | 
+   | Button - 'OK'    (L1301, T1005, R1412, B1038)
+   | ['Button5', 'OKButton', 'OK', 'OK0', 'OK1']
+   | child_window(title="OK", auto_id="IDOK", control_type="Button")
+   |    | 
+   |    | Static - 'OK'    (L1345, T1009, R1369, B1034)
+   |    | ['Static3', 'OKStatic', 'OK2']
+   |    | child_window(title="OK", control_type="Text")
+   | 
+   | Button - '繧ｭ繝｣繝ｳ繧ｻ繝ｫ'    (L1421, T1005, R1532, B1038)
+   | ['繧ｭ繝｣繝ｳ繧ｻ繝ｫButton', 'Button6', '繧ｭ繝｣繝ｳ繧ｻ繝ｫ', '繧ｭ繝｣繝ｳ繧ｻ繝ｫ0', '繧ｭ繝｣繝ｳ繧ｻ繝ｫ1']
+   | child_window(title="繧ｭ繝｣繝ｳ繧ｻ繝ｫ", auto_id="IDCANCEL", control_type="Button")
+   |    | 
+   |    | Static - '繧ｭ繝｣繝ｳ繧ｻ繝ｫ'    (L1442, T1009, R1511, B1034)
+   |    | ['繧ｭ繝｣繝ｳ繧ｻ繝ｫStatic', 'Static4', '繧ｭ繝｣繝ｳ繧ｻ繝ｫ2']
+   |    | child_window(title="繧ｭ繝｣繝ｳ繧ｻ繝ｫ", control_type="Text")
+   | 
+   | TabControl - ''    (L437, T342, R1532, B983)
+   | ['TabControl', 'TabControl繝ｪ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧ｷ繝・・', '繝・・繝悶ΝTabControl', 'TabControl繝輔ぅ繝ｼ繝ｫ繝・]
+   |    | 
+   |    | TabItem - '繝・・繝悶Ν'    (L440, T345, R510, B376)
+   |    | ['繝・・繝悶ΝTabItem', 'TabItem', '繝・・繝悶Ν', '繝・・繝悶Ν0', '繝・・繝悶Ν1', 'TabItem0', 'TabItem1']
+   |    | child_window(title="繝・・繝悶Ν", control_type="TabItem")
+   |    |    | 
+   |    |    | Static - '繝・・繝悶Ν'    (L449, T348, R501, B373)
+   |    |    | ['Static5', '繝・・繝悶Ν2', '繝・・繝悶ΝStatic']
+   |    |    | child_window(title="繝・・繝悶Ν", control_type="Text")
+   |    | 
+   |    | TabItem - '繝輔ぅ繝ｼ繝ｫ繝・    (L507, T342, R594, B376)
+   |    | ['繝輔ぅ繝ｼ繝ｫ繝欝abItem', '繝輔ぅ繝ｼ繝ｫ繝・, 'TabItem2', '繝輔ぅ繝ｼ繝ｫ繝・', '繝輔ぅ繝ｼ繝ｫ繝・']
+   |    | child_window(title="繝輔ぅ繝ｼ繝ｫ繝・, control_type="TabItem")
+   |    |    | 
+   |    |    | Static - '繝輔ぅ繝ｼ繝ｫ繝・    (L519, T347, R582, B372)
+   |    |    | ['繝輔ぅ繝ｼ繝ｫ繝・', '繝輔ぅ繝ｼ繝ｫ繝唄tatic', 'Static6']
+   |    |    | child_window(title="繝輔ぅ繝ｼ繝ｫ繝・, control_type="Text")
+   |    |    | 
+   |    |    | Static - '繝・・繝悶Ν(B):'    (L469, T402, R574, B433)
+   |    |    | ['繝・・繝悶Ν(B):Static', '繝・・繝悶Ν(B):', 'Static7', '繝・・繝悶Ν(B):0', '繝・・繝悶Ν(B):1']
+   |    |    | child_window(title="繝・・繝悶Ν(B):", auto_id="IDC_TABLE_STAT", control_type="Text")
+   |    |    |    | 
+   |    |    |    | Static - '繝・・繝悶Ν(_B):'    (L498, T405, R574, B430)
+   |    |    |    | ['繝・・繝悶Ν(_B):', '繝・・繝悶Ν(_B):Static', 'Static8']
+   |    |    |    | child_window(title="繝・・繝悶Ν(_B):", control_type="Text")
+   |    |    | 
+   |    |    | ComboBox - '繝・・繝悶Ν(B):'    (L584, T402, R797, B436)
+   |    |    | ['ComboBox', '繝・・繝悶Ν(B):2', '繝・・繝悶Ν(B):ComboBox', 'ComboBox0', 'ComboBox1']
+   |    |    | child_window(title="繝・・繝悶Ν(B):", auto_id="IDC_TABLE_MENU", control_type="ComboBox")
+   |    |    | 
+   |    |    | Static - '6 繝輔ぅ繝ｼ繝ｫ繝・    (L817, T402, R995, B433)
+   |    |    | ['6 繝輔ぅ繝ｼ繝ｫ繝唄tatic', '6 繝輔ぅ繝ｼ繝ｫ繝・, 'Static9', '6 繝輔ぅ繝ｼ繝ｫ繝唄tatic0', '6 繝輔ぅ繝ｼ繝ｫ繝唄tatic1', '6 繝輔ぅ繝ｼ繝ｫ繝・', '6 繝輔ぅ繝ｼ繝ｫ繝・']
+   |    |    | child_window(title="6 繝輔ぅ繝ｼ繝ｫ繝・, auto_id="IDC_FIELDCOUNT_STAT", control_type="Text")
+   |    |    |    | 
+   |    |    |    | Static - '6 繝輔ぅ繝ｼ繝ｫ繝・    (L817, T405, R895, B430)
+   |    |    |    | ['6 繝輔ぅ繝ｼ繝ｫ繝唄tatic2', '6 繝輔ぅ繝ｼ繝ｫ繝・', 'Static10']
+   |    |    |    | child_window(title="6 繝輔ぅ繝ｼ繝ｫ繝・, control_type="Text")
+   |    |    | 
+   |    |    | Button - '蜷梧悄(S)...'    (L919, T402, R1033, B435)
+   |    |    | ['蜷梧悄(S)...', 'Button7', '蜷梧悄(S)...Button']
+   |    |    | child_window(title="蜷梧悄(S)...", auto_id="IDC_DEFFIELDS_SYNC_BUTTON", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Static - '蜷梧悄(_S)...'    (L942, T406, R1010, B431)
+   |    |    |    | ['蜷梧悄(_S)...', '蜷梧悄(_S)...Static', 'Static11']
+   |    |    |    | child_window(title="蜷梧悄(_S)...", control_type="Text")
+   |    |    | 
+   |    |    | Static - '陦ｨ遉ｺ鬆・V):'    (L1190, T402, R1298, B433)
+   |    |    | ['陦ｨ遉ｺ鬆・V):', '陦ｨ遉ｺ鬆・V):Static', 'Static12', '陦ｨ遉ｺ鬆・V):0', '陦ｨ遉ｺ鬆・V):1']
+   |    |    | child_window(title="陦ｨ遉ｺ鬆・V):", auto_id="IDC_VIEWBY_STAT", control_type="Text")
+   |    |    |    | 
+   |    |    |    | Static - '陦ｨ遉ｺ鬆・_V):'    (L1219, T405, R1298, B430)
+   |    |    |    | ['陦ｨ遉ｺ鬆・_V):Static', '陦ｨ遉ｺ鬆・_V):', 'Static13']
+   |    |    |    | child_window(title="陦ｨ遉ｺ鬆・_V):", control_type="Text")
+   |    |    | 
+   |    |    | ComboBox - '陦ｨ遉ｺ鬆・V):'    (L1306, T402, R1501, B436)
+   |    |    | ['ComboBox2', '陦ｨ遉ｺ鬆・V):2', '陦ｨ遉ｺ鬆・V):ComboBox']
+   |    |    | child_window(title="陦ｨ遉ｺ鬆・V):", auto_id="IDC_VIEWBY_MENU", control_type="ComboBox")
+   |    |    | 
+   |    |    | ListView - '繝輔ぅ繝ｼ繝ｫ繝峨・荳隕ｧ'    (L469, T444, R1501, B811)
+   |    |    | ['ListView', '繝輔ぅ繝ｼ繝ｫ繝峨・荳隕ｧListView', '繝輔ぅ繝ｼ繝ｫ繝峨・荳隕ｧ']
+   |    |    | child_window(title="繝輔ぅ繝ｼ繝ｫ繝峨・荳隕ｧ", auto_id="IDC_DEFFIELDS_FIELD_LIST", control_type="DataGrid")
+   |    |    |    | 
+   |    |    |    | Header - ''    (L475, T447, R1495, B477)
+   |    |    |    | ['Header', '繝・・繝悶Ν(B):Header']
+   |    |    |    |    | 
+   |    |    |    |    | HeaderItem - '繝輔ぅ繝ｼ繝ｫ繝牙錐'    (L475, T447, R700, B477)
+   |    |    |    |    | ['HeaderItem', '繝輔ぅ繝ｼ繝ｫ繝牙錐', '繝輔ぅ繝ｼ繝ｫ繝牙錐HeaderItem', '繝輔ぅ繝ｼ繝ｫ繝牙錐0', '繝輔ぅ繝ｼ繝ｫ繝牙錐1', 'HeaderItem0', 'HeaderItem1']
+   |    |    |    |    | child_window(title="繝輔ぅ繝ｼ繝ｫ繝牙錐", control_type="HeaderItem")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - '繝輔ぅ繝ｼ繝ｫ繝牙錐'    (L478, T450, R559, B475)
+   |    |    |    |    |    | ['Static14', '繝輔ぅ繝ｼ繝ｫ繝牙錐2', '繝輔ぅ繝ｼ繝ｫ繝牙錐Static']
+   |    |    |    |    |    | child_window(title="繝輔ぅ繝ｼ繝ｫ繝牙錐", control_type="Text")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Thumb - ''    (L687, T447, R714, B477)
+   |    |    |    |    |    | ['繝輔ぅ繝ｼ繝ｫ繝牙錐Thumb', 'Thumb', '繧ｿ繧､繝裕humb', 'Thumb0', 'Thumb1', '繧ｿ繧､繝裕humb0', '繧ｿ繧､繝裕humb1']
+   |    |    |    |    |    | child_window(auto_id="PART_HeaderGripper", control_type="Thumb")
+   |    |    |    |    | 
+   |    |    |    |    | HeaderItem - '繧ｿ繧､繝・    (L700, T447, R948, B477)
+   |    |    |    |    | ['HeaderItem2', '繧ｿ繧､繝幽eaderItem', '繧ｿ繧､繝・, '繧ｿ繧､繝・', '繧ｿ繧､繝・']
+   |    |    |    |    | child_window(title="繧ｿ繧､繝・, control_type="HeaderItem")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - '繧ｿ繧､繝・    (L703, T450, R744, B475)
+   |    |    |    |    |    | ['Static15', '繧ｿ繧､繝祐tatic', '繧ｿ繧､繝・']
+   |    |    |    |    |    | child_window(title="繧ｿ繧､繝・, control_type="Text")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Thumb - ''    (L934, T447, R961, B477)
+   |    |    |    |    |    | ['繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ欝humb', 'Thumb2', '繧ｿ繧､繝裕humb2', '繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ欝humb0', '繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ欝humb1']
+   |    |    |    |    |    | child_window(auto_id="PART_HeaderGripper", control_type="Thumb")
+   |    |    |    |    | 
+   |    |    |    |    | HeaderItem - '繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ・    (L947, T447, R1491, B477)
+   |    |    |    |    | ['HeaderItem3', '繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ羽eaderItem', '繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ・, '繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ・', '繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ・']
+   |    |    |    |    | child_window(title="繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ・, control_type="HeaderItem")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - '繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ・    (L950, T450, R1265, B475)
+   |    |    |    |    |    | ['繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ唄tatic', '繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ・', 'Static16']
+   |    |    |    |    |    | child_window(title="繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ・, control_type="Text")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Thumb - ''    (L1477, T447, R1504, B477)
+   |    |    |    |    |    | ['繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ欝humb2', 'Thumb3']
+   |    |    |    |    |    | child_window(auto_id="PART_HeaderGripper", control_type="Thumb")
+   |    |    |    | 
+   |    |    |    | DataItem - '荳ｦ縺ｹ譖ｿ縺・StaffID 繝・く繧ｹ繝・    (L472, T477, R1498, B507)
+   |    |    |    | ['DataItem', '荳ｦ縺ｹ譖ｿ縺・StaffID 繝・く繧ｹ繝・ataItem', '荳ｦ縺ｹ譖ｿ縺・StaffID 繝・く繧ｹ繝・, 'DataItem0', 'DataItem1']
+   |    |    |    | child_window(title="荳ｦ縺ｹ譖ｿ縺・StaffID 繝・く繧ｹ繝・, control_type="DataItem")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L485, T481, R692, B506)
+   |    |    |    |    | ['繝輔ぅ繝ｼ繝ｫ繝牙錐Custom', 'Custom', 'Custom0', 'Custom1']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Image - ''    (L479, T482, R503, B506)
+   |    |    |    |    |    | ['繝輔ぅ繝ｼ繝ｫ繝牙錐Image', 'Image', '繝輔ぅ繝ｼ繝ｫ繝牙錐Image0', '繝輔ぅ繝ｼ繝ｫ繝牙錐Image1', 'Image0', 'Image1']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - 'StaffID'    (L506, T481, R560, B506)
+   |    |    |    |    |    | ['StaffID', 'StaffIDStatic', 'Static17']
+   |    |    |    |    |    | child_window(title="StaffID", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L710, T481, R940, B506)
+   |    |    |    |    | ['StaffIDCustom', 'Custom2', '繧ｿ繧､繝佑ustom', 'StaffIDCustom0', 'StaffIDCustom1']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - '繝・く繧ｹ繝・    (L713, T481, R767, B506)
+   |    |    |    |    |    | ['繝・く繧ｹ繝・tatic', '繝・く繧ｹ繝・, 'Static18', '繝・く繧ｹ繝・tatic0', '繝・く繧ｹ繝・tatic1', '繝・く繧ｹ繝・', '繝・く繧ｹ繝・']
+   |    |    |    |    |    | child_window(title="繝・く繧ｹ繝・, control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L957, T481, R1483, B506)
+   |    |    |    |    | ['繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ韻ustom', 'Custom3', '繝・く繧ｹ繝・ustom', '繝・く繧ｹ繝・ustom0', '繝・く繧ｹ繝・ustom1', '繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ韻ustom0', '繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ韻ustom1']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - ''    (L0, T0, R0, B0)
+   |    |    |    |    |    | ['Static19']
+   |    |    |    | 
+   |    |    |    | DataItem - '荳ｦ縺ｹ譖ｿ縺・StaffName 繝・く繧ｹ繝・    (L472, T509, R1498, B539)
+   |    |    |    | ['DataItem2', '荳ｦ縺ｹ譖ｿ縺・StaffName 繝・く繧ｹ繝・, '荳ｦ縺ｹ譖ｿ縺・StaffName 繝・く繧ｹ繝・ataItem']
+   |    |    |    | child_window(title="荳ｦ縺ｹ譖ｿ縺・StaffName 繝・く繧ｹ繝・, control_type="DataItem")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L485, T513, R692, B538)
+   |    |    |    |    | ['StaffIDCustom2', 'Custom4']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Image - ''    (L479, T514, R503, B538)
+   |    |    |    |    |    | ['繝輔ぅ繝ｼ繝ｫ繝牙錐Image2', 'Image2']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - 'StaffName'    (L506, T513, R589, B538)
+   |    |    |    |    |    | ['StaffName', 'StaffNameStatic', 'Static20']
+   |    |    |    |    |    | child_window(title="StaffName", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L710, T513, R940, B538)
+   |    |    |    |    | ['StaffNameCustom', 'Custom5', '繝・く繧ｹ繝・ustom2', 'StaffNameCustom0', 'StaffNameCustom1']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - '繝・く繧ｹ繝・    (L713, T513, R767, B538)
+   |    |    |    |    |    | ['繝・く繧ｹ繝・tatic2', '繝・く繧ｹ繝・', 'Static21']
+   |    |    |    |    |    | child_window(title="繝・く繧ｹ繝・, control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L957, T513, R1483, B538)
+   |    |    |    |    | ['繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ韻ustom2', 'Custom6', '繝・く繧ｹ繝・ustom3']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - ''    (L0, T0, R0, B0)
+   |    |    |    |    |    | ['Static22']
+   |    |    |    | 
+   |    |    |    | DataItem - '荳ｦ縺ｹ譖ｿ縺・Role 繝・く繧ｹ繝・    (L472, T540, R1498, B570)
+   |    |    |    | ['DataItem3', '荳ｦ縺ｹ譖ｿ縺・Role 繝・く繧ｹ繝・ataItem', '荳ｦ縺ｹ譖ｿ縺・Role 繝・く繧ｹ繝・]
+   |    |    |    | child_window(title="荳ｦ縺ｹ譖ｿ縺・Role 繝・く繧ｹ繝・, control_type="DataItem")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L485, T545, R692, B570)
+   |    |    |    |    | ['StaffNameCustom2', 'Custom7']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Image - ''    (L479, T546, R503, B570)
+   |    |    |    |    |    | ['繝輔ぅ繝ｼ繝ｫ繝牙錐Image3', 'Image3']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - 'Role'    (L506, T545, R541, B570)
+   |    |    |    |    |    | ['RoleStatic', 'Role', 'Static23']
+   |    |    |    |    |    | child_window(title="Role", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L710, T545, R940, B570)
+   |    |    |    |    | ['RoleCustom', 'Custom8', '繝・く繧ｹ繝・ustom4', 'RoleCustom0', 'RoleCustom1']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - '繝・く繧ｹ繝・    (L713, T545, R767, B570)
+   |    |    |    |    |    | ['繝・く繧ｹ繝・tatic3', '繝・く繧ｹ繝・', 'Static24']
+   |    |    |    |    |    | child_window(title="繝・く繧ｹ繝・, control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L957, T545, R1483, B570)
+   |    |    |    |    | ['繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ韻ustom3', 'Custom9', '繝・く繧ｹ繝・ustom5']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - ''    (L0, T0, R0, B0)
+   |    |    |    |    |    | ['Static25']
+   |    |    |    | 
+   |    |    |    | DataItem - '荳ｦ縺ｹ譖ｿ縺・ContactInfo 繝・く繧ｹ繝・    (L472, T573, R1498, B603)
+   |    |    |    | ['DataItem4', '荳ｦ縺ｹ譖ｿ縺・ContactInfo 繝・く繧ｹ繝・ataItem', '荳ｦ縺ｹ譖ｿ縺・ContactInfo 繝・く繧ｹ繝・]
+   |    |    |    | child_window(title="荳ｦ縺ｹ譖ｿ縺・ContactInfo 繝・く繧ｹ繝・, control_type="DataItem")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L485, T577, R692, B602)
+   |    |    |    |    | ['RoleCustom2', 'Custom10']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Image - ''    (L479, T577, R503, B601)
+   |    |    |    |    |    | ['繝輔ぅ繝ｼ繝ｫ繝牙錐Image4', 'Image4']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - 'ContactInfo'    (L506, T577, R599, B602)
+   |    |    |    |    |    | ['ContactInfo', 'ContactInfoStatic', 'Static26']
+   |    |    |    |    |    | child_window(title="ContactInfo", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L710, T577, R940, B602)
+   |    |    |    |    | ['ContactInfoCustom', 'Custom11', '繝・く繧ｹ繝・ustom6', 'ContactInfoCustom0', 'ContactInfoCustom1']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - '繝・く繧ｹ繝・    (L713, T577, R767, B602)
+   |    |    |    |    |    | ['繝・く繧ｹ繝・tatic4', '繝・く繧ｹ繝・', 'Static27']
+   |    |    |    |    |    | child_window(title="繝・く繧ｹ繝・, control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L957, T577, R1483, B602)
+   |    |    |    |    | ['繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ韻ustom4', 'Custom12', '繝・く繧ｹ繝・ustom7']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - ''    (L0, T0, R0, B0)
+   |    |    |    |    |    | ['Static28']
+   |    |    |    | 
+   |    |    |    | DataItem - '荳ｦ縺ｹ譖ｿ縺・繧ｹ繧ｿ繝・ヵ_ID 繝・く繧ｹ繝・    (L472, T604, R1498, B634)
+   |    |    |    | ['DataItem5', '荳ｦ縺ｹ譖ｿ縺・繧ｹ繧ｿ繝・ヵ_ID 繝・く繧ｹ繝・, '荳ｦ縺ｹ譖ｿ縺・繧ｹ繧ｿ繝・ヵ_ID 繝・く繧ｹ繝・ataItem']
+   |    |    |    | child_window(title="荳ｦ縺ｹ譖ｿ縺・繧ｹ繧ｿ繝・ヵ_ID 繝・く繧ｹ繝・, control_type="DataItem")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L485, T609, R692, B634)
+   |    |    |    |    | ['ContactInfoCustom2', 'Custom13']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Image - ''    (L479, T610, R503, B634)
+   |    |    |    |    |    | ['繝輔ぅ繝ｼ繝ｫ繝牙錐Image5', 'Image5']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - '繧ｹ繧ｿ繝・ヵ_ID'    (L506, T609, R583, B634)
+   |    |    |    |    |    | ['Static29', '繧ｹ繧ｿ繝・ヵ_ID', '繧ｹ繧ｿ繝・ヵ_IDStatic']
+   |    |    |    |    |    | child_window(title="繧ｹ繧ｿ繝・ヵ_ID", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L710, T609, R940, B634)
+   |    |    |    |    | ['繧ｹ繧ｿ繝・ヵ_IDCustom', 'Custom14', '繝・く繧ｹ繝・ustom8', '繧ｹ繧ｿ繝・ヵ_IDCustom0', '繧ｹ繧ｿ繝・ヵ_IDCustom1']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - '繝・く繧ｹ繝・    (L713, T609, R767, B634)
+   |    |    |    |    |    | ['繝・く繧ｹ繝・tatic5', '繝・く繧ｹ繝・', 'Static30']
+   |    |    |    |    |    | child_window(title="繝・く繧ｹ繝・, control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L957, T609, R1483, B634)
+   |    |    |    |    | ['繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ韻ustom5', 'Custom15', '繝・く繧ｹ繝・ustom9']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - ''    (L0, T0, R0, B0)
+   |    |    |    |    |    | ['Static31']
+   |    |    |    | 
+   |    |    |    | DataItem - '荳ｦ縺ｹ譖ｿ縺・繧ｹ繧ｿ繝・ヵ_ID_荳ｻ繧ｭ繝ｼ 繝・く繧ｹ繝・    (L472, T637, R1498, B667)
+   |    |    |    | ['DataItem6', '荳ｦ縺ｹ譖ｿ縺・繧ｹ繧ｿ繝・ヵ_ID_荳ｻ繧ｭ繝ｼ 繝・く繧ｹ繝・ataItem', '荳ｦ縺ｹ譖ｿ縺・繧ｹ繧ｿ繝・ヵ_ID_荳ｻ繧ｭ繝ｼ 繝・く繧ｹ繝・]
+   |    |    |    | child_window(title="荳ｦ縺ｹ譖ｿ縺・繧ｹ繧ｿ繝・ヵ_ID_荳ｻ繧ｭ繝ｼ 繝・く繧ｹ繝・, control_type="DataItem")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L485, T641, R692, B666)
+   |    |    |    |    | ['繧ｹ繧ｿ繝・ヵ_IDCustom2', 'Custom16']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Image - ''    (L479, T642, R503, B666)
+   |    |    |    |    |    | ['繝輔ぅ繝ｼ繝ｫ繝牙錐Image6', 'Image6']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - '繧ｹ繧ｿ繝・ヵ_ID_荳ｻ繧ｭ繝ｼ'    (L506, T641, R634, B666)
+   |    |    |    |    |    | ['繧ｹ繧ｿ繝・ヵ_ID_荳ｻ繧ｭ繝ｼ', '繧ｹ繧ｿ繝・ヵ_ID_荳ｻ繧ｭ繝ｼStatic', 'Static32']
+   |    |    |    |    |    | child_window(title="繧ｹ繧ｿ繝・ヵ_ID_荳ｻ繧ｭ繝ｼ", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L710, T641, R940, B666)
+   |    |    |    |    | ['繧ｹ繧ｿ繝・ヵ_ID_荳ｻ繧ｭ繝ｼCustom', 'Custom17', '繝・く繧ｹ繝・ustom10']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - '繝・く繧ｹ繝・    (L713, T641, R767, B666)
+   |    |    |    |    |    | ['繝・く繧ｹ繝・tatic6', '繝・く繧ｹ繝・', 'Static33']
+   |    |    |    |    |    | child_window(title="繝・く繧ｹ繝・, control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Custom - ''    (L957, T641, R1483, B666)
+   |    |    |    |    | ['繧ｪ繝励す繝ｧ繝ｳ/繧ｳ繝｡繝ｳ繝・  ・医け繝ｪ繝・け縺励※蛻・ｊ譖ｿ縺茨ｼ韻ustom6', 'Custom18', '繝・く繧ｹ繝・ustom11']
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Static - ''    (L0, T0, R0, B0)
+   |    |    |    |    |    | ['Static34']
+   |    |    | 
+   |    |    | Static - '繝輔ぅ繝ｼ繝ｫ繝牙錐(F):'    (L457, T828, R607, B861)
+   |    |    | ['繝輔ぅ繝ｼ繝ｫ繝牙錐(F):', '繝輔ぅ繝ｼ繝ｫ繝牙錐(F):Static', 'Static35']
+   |    |    | child_window(title="繝輔ぅ繝ｼ繝ｫ繝牙錐(F):", auto_id="IDC_DEFFIELDS_FIELDNAME_STAT", control_type="Text")
+   |    |    |    | 
+   |    |    |    | Static - '繝輔ぅ繝ｼ繝ｫ繝牙錐(_F):'    (L503, T832, R607, B857)
+   |    |    |    | ['Static36', '繝輔ぅ繝ｼ繝ｫ繝牙錐(_F):Static', '繝輔ぅ繝ｼ繝ｫ繝牙錐(_F):']
+   |    |    |    | child_window(title="繝輔ぅ繝ｼ繝ｫ繝牙錐(_F):", control_type="Text")
+   |    |    | 
+   |    |    | Edit - ''    (L614, T828, R1057, B861)
+   |    |    | ['繝輔ぅ繝ｼ繝ｫ繝牙錐(_F):Edit', '繝輔ぅ繝ｼ繝ｫ繝牙錐(F):Edit', 'Edit', 'Edit0', 'Edit1']
+   |    |    | child_window(auto_id="IDC_DEFFIELDS_FIELDNAME_EDIT", control_type="Edit")
+   |    |    |    | 
+   |    |    |    | ScrollBar - ''    (L0, T0, R0, B0)
+   |    |    |    | ['ScrollBar', 'ScrollBar0', 'ScrollBar1']
+   |    |    |    | child_window(auto_id="VerticalScrollBar", control_type="ScrollBar")
+   |    |    |    | 
+   |    |    |    | ScrollBar - ''    (L0, T0, R0, B0)
+   |    |    |    | ['ScrollBar2']
+   |    |    |    | child_window(auto_id="HorizontalScrollBar", control_type="ScrollBar")
+   |    |    | 
+   |    |    | Static - '繧ｿ繧､繝・Y):'    (L1063, T828, R1153, B861)
+   |    |    | ['繧ｿ繧､繝・Y):', '繧ｿ繧､繝・Y):Static', 'Static37', '繧ｿ繧､繝・Y):0', '繧ｿ繧､繝・Y):1']
+   |    |    | child_window(title="繧ｿ繧､繝・Y):", auto_id="IDC_DEFFIELDS_FIELDTYPE_STAT", control_type="Text")
+   |    |    |    | 
+   |    |    |    | Static - '繧ｿ繧､繝・_Y):'    (L1088, T832, R1153, B857)
+   |    |    |    | ['繧ｿ繧､繝・_Y):Static', '繧ｿ繧､繝・_Y):', 'Static38']
+   |    |    |    | child_window(title="繧ｿ繧､繝・_Y):", control_type="Text")
+   |    |    | 
+   |    |    | ComboBox - '繧ｿ繧､繝・Y):'    (L1165, T827, R1340, B861)
+   |    |    | ['ComboBox3', '繧ｿ繧､繝・Y):2', '繧ｿ繧､繝・Y):ComboBox']
+   |    |    | child_window(title="繧ｿ繧､繝・Y):", auto_id="IDC_FIELD_TYPE_MENU", control_type="ComboBox")
+   |    |    | 
+   |    |    | Button - '繧ｪ繝励す繝ｧ繝ｳ(N)...'    (L1349, T828, R1499, B861)
+   |    |    | ['Button8', '繧ｪ繝励す繝ｧ繝ｳ(N)...', '繧ｪ繝励す繝ｧ繝ｳ(N)...Button']
+   |    |    | child_window(title="繧ｪ繝励す繝ｧ繝ｳ(N)...", auto_id="IDC_DEFFIELDS_OPTIONS_BUTTON", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Static - '繧ｪ繝励す繝ｧ繝ｳ(_N)...'    (L1374, T832, R1474, B857)
+   |    |    |    | ['Static39', '繧ｪ繝励す繝ｧ繝ｳ(_N)...', '繧ｪ繝励す繝ｧ繝ｳ(_N)...Static']
+   |    |    |    | child_window(title="繧ｪ繝励す繝ｧ繝ｳ(_N)...", control_type="Text")
+   |    |    | 
+   |    |    | Static - '繧ｳ繝｡繝ｳ繝・C):'    (L457, T876, R607, B909)
+   |    |    | ['繧ｳ繝｡繝ｳ繝・C):Static', '繧ｳ繝｡繝ｳ繝・C):', 'Static40']
+   |    |    | child_window(title="繧ｳ繝｡繝ｳ繝・C):", auto_id="IDC_DEFFIELDS_FIELDCOMMENT_STAT", control_type="Text")
+   |    |    |    | 
+   |    |    |    | Static - '繧ｳ繝｡繝ｳ繝・_C):'    (L531, T880, R607, B905)
+   |    |    |    | ['繧ｳ繝｡繝ｳ繝・_C):', '繧ｳ繝｡繝ｳ繝・_C):Static', 'Static41']
+   |    |    |    | child_window(title="繧ｳ繝｡繝ｳ繝・_C):", control_type="Text")
+   |    |    | 
+   |    |    | Edit - ''    (L614, T876, R1501, B909)
+   |    |    | ['繧ｳ繝｡繝ｳ繝・_C):Edit', '繧ｳ繝｡繝ｳ繝・C):Edit', 'Edit2']
+   |    |    | child_window(auto_id="IDC_DEFFIELDS_FIELDCOMMENT_EDIT", control_type="Edit")
+   |    |    |    | 
+   |    |    |    | ScrollBar - ''    (L0, T0, R0, B0)
+   |    |    |    | ['ScrollBar3']
+   |    |    |    | child_window(auto_id="VerticalScrollBar", control_type="ScrollBar")
+   |    |    |    | 
+   |    |    |    | ScrollBar - ''    (L0, T0, R0, B0)
+   |    |    |    | ['ScrollBar4']
+   |    |    |    | child_window(auto_id="HorizontalScrollBar", control_type="ScrollBar")
+   |    |    | 
+   |    |    | Button - ' 竍・ Export Defaults'    (L466, T933, R490, B966)
+   |    |    | ['Button9', ' 竍・ Export DefaultsButton', ' 竍・ Export Defaults']
+   |    |    | child_window(title=" 竍・ Export Defaults", auto_id="IDC_DEFFIELDS_DEFAULTDEFS_BUTTON", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Static - ' 竍・ E_xport Defaults'    (L467, T937, R614, B962)
+   |    |    |    | ['Static42', ' 竍・ E_xport DefaultsStatic', ' 竍・ E_xport Defaults']
+   |    |    |    | child_window(title=" 竍・ E_xport Defaults", control_type="Text")
+   |    |    | 
+   |    |    | Button - ' 竍・ Import Defaults'    (L499, T933, R523, B966)
+   |    |    | ['Button10', ' 竍・ Import Defaults', ' 竍・ Import DefaultsButton']
+   |    |    | child_window(title=" 竍・ Import Defaults", auto_id="IDC_DEFFIELDS_DEFAULTDEFS_IMP_BUTTON", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Static - ' 竍・ _Import Defaults'    (L500, T937, R651, B962)
+   |    |    |    | [' 竍・ _Import DefaultsStatic', ' 竍・ _Import Defaults', 'Static43']
+   |    |    |    | child_window(title=" 竍・ _Import Defaults", control_type="Text")
+   |    |    | 
+   |    |    | Button - '菴懈・(E)'    (L614, T933, R727, B966)
+   |    |    | ['菴懈・(E)Button', 'Button11', '菴懈・(E)']
+   |    |    | child_window(title="菴懈・(E)", auto_id="IDC_DEFFIELDS_CREATE_BUTTON", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Static - '菴懈・(_E)'    (L643, T937, R698, B962)
+   |    |    |    | ['Static44', '菴懈・(_E)Static', '菴懈・(_E)']
+   |    |    |    | child_window(title="菴懈・(_E)", control_type="Text")
+   |    |    | 
+   |    |    | Button - '螟画峩(A)'    (L736, T933, R848, B966)
+   |    |    | ['Button12', '螟画峩(A)', '螟画峩(A)Button']
+   |    |    | child_window(title="螟画峩(A)", auto_id="IDC_DEFFIELDS_SAVE_BUTTON", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Static - '螟画峩(_A)'    (L763, T937, R821, B962)
+   |    |    |    | ['Static45', '螟画峩(_A)', '螟画峩(_A)Static']
+   |    |    |    | child_window(title="螟画峩(_A)", control_type="Text")
+   |    |    | 
+   |    |    | Button - '隍・｣ｽ(U)'    (L856, T933, R968, B966)
+   |    |    | ['隍・｣ｽ(U)Button', 'Button13', '隍・｣ｽ(U)']
+   |    |    | child_window(title="隍・｣ｽ(U)", auto_id="IDC_DEFFIELDS_DUPLICATE_BUTTON", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Static - '隍・｣ｽ(_U)'    (L883, T937, R941, B962)
+   |    |    |    | ['隍・｣ｽ(_U)', '隍・｣ｽ(_U)Static', 'Static46']
+   |    |    |    | child_window(title="隍・｣ｽ(_U)", control_type="Text")
+   |    |    | 
+   |    |    | Button - '蜑企勁(L)'    (L976, T933, R1088, B966)
+   |    |    | ['蜑企勁(L)', 'Button14', '蜑企勁(L)Button']
+   |    |    | child_window(title="蜑企勁(L)", auto_id="IDC_DEFFIELDS_DELETE_BUTTON", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Static - '蜑企勁(_L)'    (L1005, T937, R1059, B962)
+   |    |    |    | ['蜑企勁(_L)', '蜑企勁(_L)Static', 'Static47']
+   |    |    |    | child_window(title="蜑企勁(_L)", control_type="Text")
+   |    |    | 
+   |    |    | Button - '繧ｳ繝斐・(O)'    (L1264, T933, R1376, B966)
+   |    |    | ['Button15', '繧ｳ繝斐・(O)', '繧ｳ繝斐・(O)Button']
+   |    |    | child_window(title="繧ｳ繝斐・(O)", auto_id="ID_EDIT_COPY", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Static - '繧ｳ繝斐・(_O)'    (L1289, T937, R1351, B962)
+   |    |    |    | ['繧ｳ繝斐・(_O)', '繧ｳ繝斐・(_O)Static', 'Static48']
+   |    |    |    | child_window(title="繧ｳ繝斐・(_O)", control_type="Text")
+   |    |    | 
+   |    |    | Button - '雋ｼ繧贋ｻ倥￠(T)'    (L1387, T933, R1499, B966)
+   |    |    | ['Button16', '雋ｼ繧贋ｻ倥￠(T)', '雋ｼ繧贋ｻ倥￠(T)Button']
+   |    |    | child_window(title="雋ｼ繧贋ｻ倥￠(T)", auto_id="ID_EDIT_PASTE", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Static - '雋ｼ繧贋ｻ倥￠(_T)'    (L1402, T937, R1483, B962)
+   |    |    |    | ['雋ｼ繧贋ｻ倥￠(_T)', '雋ｼ繧贋ｻ倥￠(_T)Static', 'Static49']
+   |    |    |    | child_window(title="雋ｼ繧贋ｻ倥￠(_T)", control_type="Text")
+   |    |    | 
+   |    |    | Static - '繝輔ぅ繝ｼ繝ｫ繝峨↑縺・    (L469, T519, R1501, B567)
+   |    |    | ['繝輔ぅ繝ｼ繝ｫ繝峨↑縺・, '繝輔ぅ繝ｼ繝ｫ繝峨↑縺祐tatic', 'Static50', '繝輔ぅ繝ｼ繝ｫ繝峨↑縺・', '繝輔ぅ繝ｼ繝ｫ繝峨↑縺・', '繝輔ぅ繝ｼ繝ｫ繝峨↑縺祐tatic0', '繝輔ぅ繝ｼ繝ｫ繝峨↑縺祐tatic1']
+   |    |    | child_window(title="繝輔ぅ繝ｼ繝ｫ繝峨↑縺・, auto_id="IDC_DEFFIELDS_NO_FIELDS_TEXT", control_type="Text")
+   |    |    |    | 
+   |    |    |    | Static - '繝輔ぅ繝ｼ繝ｫ繝峨↑縺・    (L895, T519, R1075, B567)
+   |    |    |    | ['繝輔ぅ繝ｼ繝ｫ繝峨↑縺・', '繝輔ぅ繝ｼ繝ｫ繝峨↑縺祐tatic2', 'Static51']
+   |    |    |    | child_window(title="繝輔ぅ繝ｼ繝ｫ繝峨↑縺・, control_type="Text")
+   |    |    | 
+   |    |    | Static - '菫晏ｭ倥☆繧九ョ繝ｼ繧ｿ縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨ｒ菴懈・縺励∪縺吶ゅ◆縺ｨ縺医・縲∝ｧ薙∝ｾ捺･ｭ蜩｡ ID縲∬ｲｩ螢ｲ謨ｰ縺ｪ縺ｩ縺ｧ縺吶・    (L469, T570, R1501, B595)
+   |    |    | ['菫晏ｭ倥☆繧九ョ繝ｼ繧ｿ縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨ｒ菴懈・縺励∪縺吶ゅ◆縺ｨ縺医・縲∝ｧ薙∝ｾ捺･ｭ蜩｡ ID縲∬ｲｩ螢ｲ謨ｰ縺ｪ縺ｩ縺ｧ縺吶・, '菫晏ｭ倥☆繧九ョ繝ｼ繧ｿ縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨ｒ菴懈・縺励∪縺吶ゅ◆縺ｨ縺医・縲∝ｧ薙∝ｾ捺･ｭ蜩｡ ID縲∬ｲｩ螢ｲ謨ｰ縺ｪ縺ｩ縺ｧ縺吶４tatic', 'Static52', '菫晏ｭ倥☆繧九ョ繝ｼ繧ｿ縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨ｒ菴懈・縺励∪縺吶ゅ◆縺ｨ縺医・縲∝ｧ薙∝ｾ捺･ｭ蜩｡ ID縲∬ｲｩ螢ｲ謨ｰ縺ｪ縺ｩ縺ｧ縺吶・', '菫晏ｭ倥☆繧九ョ繝ｼ繧ｿ縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨ｒ菴懈・縺励∪縺吶ゅ◆縺ｨ縺医・縲∝ｧ薙∝ｾ捺･ｭ蜩｡ ID縲∬ｲｩ螢ｲ謨ｰ縺ｪ縺ｩ縺ｧ縺吶・', '菫晏ｭ倥☆繧九ョ繝ｼ繧ｿ縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨ｒ菴懈・縺励∪縺吶ゅ◆縺ｨ縺医・縲∝ｧ薙∝ｾ捺･ｭ蜩｡ ID縲∬ｲｩ螢ｲ謨ｰ縺ｪ縺ｩ縺ｧ縺吶４tatic0', '菫晏ｭ倥☆繧九ョ繝ｼ繧ｿ縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨ｒ菴懈・縺励∪縺吶ゅ◆縺ｨ縺医・縲∝ｧ薙∝ｾ捺･ｭ蜩｡ ID縲∬ｲｩ螢ｲ謨ｰ縺ｪ縺ｩ縺ｧ縺吶４tatic1']
+   |    |    | child_window(title="菫晏ｭ倥☆繧九ョ繝ｼ繧ｿ縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨ｒ菴懈・縺励∪縺吶ゅ◆縺ｨ縺医・縲∝ｧ薙∝ｾ捺･ｭ蜩｡ ID縲∬ｲｩ螢ｲ謨ｰ縺ｪ縺ｩ縺ｧ縺吶・, auto_id="IDC_DEFFIELDS_NO_FIELDS_TEXT_SMALL", control_type="Text")
+   |    |    |    | 
+   |    |    |    | Static - '菫晏ｭ倥☆繧九ョ繝ｼ繧ｿ縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨ｒ菴懈・縺励∪縺吶ゅ◆縺ｨ縺医・縲∝ｧ薙∝ｾ捺･ｭ蜩｡ ID縲∬ｲｩ螢ｲ謨ｰ縺ｪ縺ｩ縺ｧ縺吶・    (L686, T570, R1283, B595)
+   |    |    |    | ['菫晏ｭ倥☆繧九ョ繝ｼ繧ｿ縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨ｒ菴懈・縺励∪縺吶ゅ◆縺ｨ縺医・縲∝ｧ薙∝ｾ捺･ｭ蜩｡ ID縲∬ｲｩ螢ｲ謨ｰ縺ｪ縺ｩ縺ｧ縺吶・', '菫晏ｭ倥☆繧九ョ繝ｼ繧ｿ縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨ｒ菴懈・縺励∪縺吶ゅ◆縺ｨ縺医・縲∝ｧ薙∝ｾ捺･ｭ蜩｡ ID縲∬ｲｩ螢ｲ謨ｰ縺ｪ縺ｩ縺ｧ縺吶４tatic2', 'Static53']
+   |    |    |    | child_window(title="菫晏ｭ倥☆繧九ョ繝ｼ繧ｿ縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨ｒ菴懈・縺励∪縺吶ゅ◆縺ｨ縺医・縲∝ｧ薙∝ｾ捺･ｭ蜩｡ ID縲∬ｲｩ螢ｲ謨ｰ縺ｪ縺ｩ縺ｧ縺吶・, control_type="Text")
+   |    | 
+   |    | TabItem - '繝ｪ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧ｷ繝・・'    (L591, T345, R725, B376)
+   |    | ['TabItem3', '繝ｪ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧ｷ繝・・TabItem', '繝ｪ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧ｷ繝・・', '繝ｪ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧ｷ繝・・0', '繝ｪ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧ｷ繝・・1']
+   |    | child_window(title="繝ｪ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧ｷ繝・・", control_type="TabItem")
+   |    |    | 
+   |    |    | Static - '繝ｪ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧ｷ繝・・'    (L600, T348, R716, B373)
+   |    |    | ['繝ｪ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧ｷ繝・・2', 'Static54', '繝ｪ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧ｷ繝・・Static']
+   |    |    | child_window(title="繝ｪ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧ｷ繝・・", control_type="Text")
+
+--- Found Window: 'AI001_繝｢繝・Ν縺九ｉ蠢懃ｭ斐ｒ逕滓・_蜈･髢_' [FMPRO22.0APP] ---
+
+--- Found Window: '繧ｹ繧ｯ繝ｪ繝励ヨ繝ｯ繝ｼ繧ｯ繧ｹ繝壹・繧ｹ (AI001_繝｢繝・Ν縺九ｉ蠢懃ｭ斐ｒ逕滓・_蜈･髢_)' [Window] ---
+
+--- Found Window: '繧ｹ繧ｯ繝ｪ繝励ヨ繝ｯ繝ｼ繧ｯ繧ｹ繝壹・繧ｹ (NightClub2)' [Window] ---
+
+--- Found Window: '繝ｬ繧､繧｢繧ｦ繝医・邂｡逅・(NightClub2)' [Window] ---

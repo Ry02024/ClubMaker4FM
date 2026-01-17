@@ -1,0 +1,1 @@
+﻿{"fields": [{"name": "StaffID", "type": "テキスト"}, {"name": "StaffName", "type": "テキスト"}, {"name": "Role", "type": "テキスト"}, {"name": "ContactInfo", "type": "テキスト"}]}
