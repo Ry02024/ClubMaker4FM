@@ -44,13 +44,23 @@ def find_manage_database_dialog(app):
                     
     return None
 
+import fm_utils
+
 def get_existing_fields():
     fields = []
+    fm_utils.start_overlay()
+    fm_utils.update_overlay("FileMakerからフィールドを読み取っています...")
+    
     try:
+        # Try to connect
         try:
             app = Application(backend="uia").connect(path="FileMaker Pro.exe")
         except:
             return {"success": False, "error": "Could not connect to FileMaker Pro."}
+
+        # Auto-open logic disabled for stability (User request to revert)
+        # if not fm_utils.ensure_manage_database():
+        #      return {"success": False, "error": "Could not open 'Manage Database' dialog."}
 
         dialog = find_manage_database_dialog(app)
 
@@ -59,20 +69,29 @@ def get_existing_fields():
 
         dialog_spec = app.window(handle=dialog.handle)
         dialog_spec.set_focus()
+        
+        # 「フィールド」タブ項目を直接クリックして切り替え
+        try:
+            tab_field = dialog_spec.child_window(title="フィールド", control_type="TabItem")
+            if tab_field.exists():
+                tab_field.click_input()
+                time.sleep(0.5)
+        except:
+            # フォールバック: Alt+F
+            dialog_spec.type_keys("%f") 
+            time.sleep(0.5)
 
-        # フィールド一覧の特定を強化
-        # auto_id または名称で探す
+        # フィールドリスト (DataGrid) を取得
+        # DataGridをダイアログ直下から探索
         field_list = dialog_spec.child_window(auto_id="IDC_DEFFIELDS_FIELD_LIST", control_type="DataGrid")
         
         if not field_list.exists():
             # DataGridを全探索
             grids = dialog_spec.descendants(control_type="DataGrid")
             if grids:
-                # 複数のDataGridがある場合、より大きい方を選択するなどのロジックも検討できるが、
-                # 通常は1つ
                 field_list = grids[0]
             else:
-                return {"success": False, "error": "Field list (DataGrid) not found."}
+                return {"success": False, "error": "Field list (DataGrid) not found. Please ensure Fields tab is selected."}
 
         items = field_list.descendants(control_type="DataItem")
         
@@ -94,13 +113,32 @@ def get_existing_fields():
                 
                 if name_text:
                     fields.append({"name": name_text, "type": type_text})
-
+        
+        fm_utils.update_overlay(f"読み取り完了: {len(fields)}件")
+        time.sleep(1.0)
         return {"success": True, "fields": fields}
 
     except Exception as e:
         import traceback
         return {"success": False, "error": str(e), "traceback": traceback.format_exc()}
+    finally:
+        fm_utils.stop_overlay()
 
 if __name__ == "__main__":
     result = get_existing_fields()
-    print(json.dumps(result, ensure_ascii=False))
+    
+    # Save to data/current_fields.json
+    try:
+        import os
+        data_dir = os.path.join(os.getcwd(), 'data')
+        os.makedirs(data_dir, exist_ok=True)
+        file_path = os.path.join(data_dir, 'current_fields.json')
+        
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Error saving to file: {e}", file=sys.stderr)
+
+    # Still print to stdout for other scripts to use
+    # use ensure_ascii=True to safely pass unicode via stdout on Windows
+    print(json.dumps(result, ensure_ascii=True))

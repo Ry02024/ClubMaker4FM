@@ -1,6 +1,0 @@
-﻿Connecting to FileMaker Pro using UIA...
-Error: There are 2 elements that match the criteria {'class_name': 'FMPRO22.0APP', 'backend': 'uia', 'process': 14124}
-
-Searching for any DataGrid or List in Desktop (UIA)...
-Found Window: FileMakerのAIについて教えて下さい - Google Chrome
-Fallback error: 'UIAWrapper' object has no attribute 'print_control_identifiers'

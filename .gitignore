@@ -1,34 +1,46 @@
-# Dependencies
-node_modules/
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Next.js
-.next/
-out/
-build/
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
 
-# App Data / Screenshots
-public/screenshots/
-assets/screenshot_*.png
-tmp/
+# testing
+/coverage
 
-# Environment
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# next.js
+/.next/
+/out/
 
-# Debug
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
 
-# OS
-.DS_Store
-Thumbs.db
+# local env files
+.env*.local
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# python venv
+.venv/
+__pycache__/
+
+# ClubMaker Logs
+/logs/
+/data/*.json
+!/data/current_fields.json

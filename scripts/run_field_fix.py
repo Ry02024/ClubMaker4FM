@@ -19,6 +19,10 @@ def run_script(script_name, args=None):
     return result.stdout.strip()
 
 def main():
+    # 0. Activate FileMaker
+    print("Activating FileMaker Pro...")
+    run_script('activate_fm.py')
+    
     # 1. Get existing fields
     fields_output = run_script('get_fm_fields.py')
     try:

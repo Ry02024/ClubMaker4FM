@@ -1,6 +1,0 @@
-﻿Inspecting Window: 「NightClub2」のデータベースの管理
-Control Identifiers:
-
-HwndWrapper[DefaultDomain;;c73bfc99-5a22-47d7-aa8e-f224c39a5fae] - '「NightClub2」のデータベースの管理'    (L411, T282, R1558, B1064)
-['HwndWrapper[DefaultDomain;;c73bfc99-5a22-47d7-aa8e-f224c39a5fae]', '「NightClub2」のデータベースの管理HwndWrapper[DefaultDomain;;c73bfc99-5a22-47d7-aa8e-f224c39a5fae]', '「NightClub2」のデータベースの管理']
-child_window(title="「NightClub2」のデータベースの管理", class_name="HwndWrapper[DefaultDomain;;c73bfc99-5a22-47d7-aa8e-f224c39a5fae]")

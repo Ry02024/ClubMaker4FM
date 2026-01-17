@@ -25,11 +25,16 @@ def suggest_field_fix(current_fields, context=""):
     - Suggest appropriate data types if the current type seems incorrect
     - Add helpful comments explaining the field's purpose
     
+    CRITICAL: DUPLICATE NAME AVOIDANCE
+    - Every 'new_name' MUST be unique within the returned list.
+    - Every 'new_name' MUST NOT exist in the current list of fields (unless it's the exact field being renamed).
+    - If a conflict occurs, append suffixes like '_v2', '_fixed', or '_unique' to ensure uniqueness.
+    
     Return ONLY a JSON array matching the input order:
     [
       {
         "old_name": "original field name",
-        "new_name": "suggested new name",
+        "new_name": "suggested new name (MUST be unique)",
         "old_type": "original type",
         "new_type": "suggested type (or same if ok)",
         "comment": "brief explanation",
@@ -85,8 +90,8 @@ if __name__ == "__main__":
             current_fields = data.get("currentFields", [])
             context = data.get("context", "")
             result = suggest_field_fix(current_fields, context)
-            print(json.dumps(result, ensure_ascii=False))
+            print(json.dumps(result, ensure_ascii=True))
         except json.JSONDecodeError as e:
-            print(json.dumps({"success": False, "error": f"Invalid JSON: {e}"}, ensure_ascii=False))
+            print(json.dumps({"success": False, "error": f"Invalid JSON: {e}"}, ensure_ascii=True))
     else:
         print(json.dumps({"success": False, "error": "No input provided"}, ensure_ascii=False))
