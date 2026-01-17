@@ -66,26 +66,44 @@ export default function Home() {
   };
 
   const handleGenerate = async () => {
+    if (!prompt) {
+      setStatus({ msg: '指示を入力してください', isError: true });
+      return;
+    }
     setIsGenerating(true);
-    // モック生成ロジック
-    setTimeout(() => {
-      const mockDesign = {
-        tables: [
-          {
-            name: 'dp_v1',
-            fields: [
-              { name: 'date', type: 'Date' },
-              { name: 'tableno', type: 'Number' },
-              { name: 'total', type: 'Number' },
-              { name: 'cast_id', type: 'Text' },
-            ]
-          }
-        ]
-      } as { tables: FMTable[] };
-      setDesign(mockDesign);
+    setStatus({ msg: 'AIがFileMakerの設計図を作成中...', isError: false });
+
+    try {
+      const res = await fetch('/api/generate-design', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.error || '生成に失敗しました');
+      }
+
+      // AIの返答が階層化されている場合（{ tables: [...] } ではなく { design: { tables: [...] } } など）に対応
+      let extractedDesign = data.design;
+      if (!extractedDesign.tables && extractedDesign.design?.tables) {
+        extractedDesign = extractedDesign.design;
+      }
+
+      if (!extractedDesign.tables || !Array.isArray(extractedDesign.tables)) {
+        console.error('Invalid design structure:', extractedDesign);
+        throw new Error('AIの返答形式が正しくありません (tablesが見つかりません)');
+      }
+
+      setDesign(extractedDesign);
+      setStatus({ msg: '✅ 設計図が完成しました。FileMakerに反映できます。', isError: false });
+    } catch (err: any) {
+      console.error(err);
+      setStatus({ msg: `❌ エラー: ${err.message}`, isError: true });
+    } finally {
       setIsGenerating(false);
-      setStatus({ msg: '✅ AI設計が完了しました', isError: false });
-    }, 1500);
+    }
   };
 
   const copyToFM = async (xml: string) => {
@@ -220,53 +238,60 @@ export default function Home() {
               </div>
             ) : (
               <div className="space-y-6">
-                {design.tables.map((table) => (
-                  <div key={table.name} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-                    <div className="bg-white/5 p-6 flex justify-between items-center border-b border-white/5">
-                      <div>
-                        <h3 className="text-2xl font-black text-purple-400">
-                          {table.name}
-                        </h3>
-                        <p className="text-[10px] text-slate-500 uppercase font-bold mt-1 tracking-widest">Database Table</p>
-                      </div>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => copyToFM(generateFieldsXML(table.fields))}
-                          className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-bold transition-all active:scale-95"
-                        >
-                          フィールドをコピー
-                        </button>
-                        <button
-                          onClick={() => handleBatchCreateGUI(table.fields)}
-                          className="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition-all active:scale-95"
-                        >
-                          一括GUI作成
-                        </button>
-                      </div>
-                    </div>
-                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {table.fields.map((field) => (
-                        <div key={field.name} className="group bg-black/40 border border-white/5 p-4 rounded-2xl hover:border-purple-500/50 transition-all duration-300">
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="text-[10px] px-2 py-0.5 bg-white/10 text-slate-400 rounded-full font-bold uppercase">
-                              {field.type}
-                            </span>
-                          </div>
-                          <div className="font-mono text-lg font-bold text-slate-200 group-hover:text-white transition-colors flex justify-between items-center">
-                            {field.name}
-                            <button
-                              onClick={() => handleCreateFieldGUI(field.name, field.type)}
-                              className="opacity-0 group-hover:opacity-100 p-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-all text-[10px]"
-                              title="単体GUI作成"
-                            >
-                              🏗️
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                {(!design?.tables || design.tables.length === 0) ? (
+                  <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-12 text-center text-slate-500">
+                    <p className="text-xl font-bold">テーブル構造が見つかりませんでした</p>
+                    <p className="text-sm mt-2">AIの出力を解析できませんでした。もう一度指示を変えて試してみてください。</p>
                   </div>
-                ))}
+                ) : (
+                  design.tables.map((table) => (
+                    <div key={table.name} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+                      <div className="bg-white/5 p-6 flex justify-between items-center border-b border-white/5">
+                        <div>
+                          <h3 className="text-2xl font-black text-purple-400">
+                            {table.name}
+                          </h3>
+                          <p className="text-[10px] text-slate-500 uppercase font-bold mt-1 tracking-widest">Database Table</p>
+                        </div>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => copyToFM(generateFieldsXML(table.fields))}
+                            className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-bold transition-all active:scale-95"
+                          >
+                            フィールドをコピー
+                          </button>
+                          <button
+                            onClick={() => handleBatchCreateGUI(table.fields)}
+                            className="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition-all active:scale-95"
+                          >
+                            一括GUI作成
+                          </button>
+                        </div>
+                      </div>
+                      <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {table.fields.map((field) => (
+                          <div key={field.name} className="group bg-black/40 border border-white/5 p-4 rounded-2xl hover:border-purple-500/50 transition-all duration-300">
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="text-[10px] px-2 py-0.5 bg-white/10 text-slate-400 rounded-full font-bold uppercase">
+                                {field.type}
+                              </span>
+                            </div>
+                            <div className="font-mono text-lg font-bold text-slate-200 group-hover:text-white transition-colors flex justify-between items-center">
+                              {field.name}
+                              <button
+                                onClick={() => handleCreateFieldGUI(field.name, field.type)}
+                                className="opacity-0 group-hover:opacity-100 p-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-all text-[10px]"
+                                title="単体GUI作成"
+                              >
+                                🏗️
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>

@@ -6,38 +6,49 @@ import pygetwindow as gw
 from pywinauto import Application
 
 def launch_filemaker(executable_path):
-    if not os.path.exists(executable_path):
-        print(f"Error: FileMaker executable not found at {executable_path}")
-        return False
-
+    print(f"Checking for FileMaker Pro process...")
     try:
-        # Launch the application
-        subprocess.Popen([executable_path])
-        print(f"Launching FileMaker from {executable_path}...")
-        
-        # Wait for the window to appear
-        retries = 20
-        while retries > 0:
-            windows = gw.getWindowsWithTitle('FileMaker Pro')
-            if windows:
-                fm_window = windows[0]
-                print(f"Found FileMaker window. Activating...")
-                try:
-                    # Attempt to bring to foreground using pywinauto for more reliability
-                    app = Application().connect(path=executable_path)
-                    app.top_window().set_focus()
-                except Exception as e:
-                    print(f"Warning: pywinauto focus failed, falling back to pygetwindow: {e}")
-                    fm_window.activate()
-                
+        # 1. 既に起動しているかプロセスでチェック
+        from pywinauto import Application, Desktop
+        try:
+            app = Application(backend="win32").connect(path="FileMaker Pro.exe")
+            print("FileMaker is already running. Bringing to front...")
+            # 全ウィンドウから一番手前にある可視ウィンドウを取得
+            dlg = app.top_window()
+            if dlg.exists() and dlg.is_visible():
+                dlg.set_focus()
                 return True
-            time.sleep(0.5)
+        except:
+            # プロセスがまだない場合は次へ
+            pass
+
+        # 2. 存在しない場合は起動
+        if not os.path.exists(executable_path):
+            print(f"Error: FileMaker executable not found at {executable_path}")
+            return False
+
+        print(f"Launching FileMaker from {executable_path}...")
+        subprocess.Popen([executable_path])
+        
+        # 起動を待つ
+        retries = 30
+        while retries > 0:
+            try:
+                app = Application(backend="win32").connect(path="FileMaker Pro.exe")
+                dlg = app.top_window()
+                if dlg.exists() and dlg.is_visible():
+                    print("FileMaker started and window found.")
+                    dlg.set_focus()
+                    return True
+            except:
+                pass
+            time.sleep(1)
             retries -= 1
         
-        print("Timeout waiting for FileMaker window.")
+        print("Timeout waiting for FileMaker to start.")
         return False
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An unexpected error occurred: {e}")
         return False
 
 if __name__ == "__main__":
