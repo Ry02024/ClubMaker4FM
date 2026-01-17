@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { generateFieldsXML, generateTableXML, FMTable } from '@/lib/fm-xml';
+import { generateFieldsXML, generateTableXML, generateLayoutXML, FMTable } from '@/lib/fm-xml';
 
 const PRESET_PROMPT = `夜店クラブの「伝票・売上管理」ミニマムシステム
 - 伝票テーブル(dp): 日付, tableno, total, castid, custid, paytype
@@ -422,9 +422,17 @@ export default function Home() {
                               <span className="text-slate-500 text-xs">for {lyt.table}</span>
                             </div>
                           </div>
-                          <div className="flex gap-2">
-                            <div className="w-8 h-8 rounded-full shadow-inner border border-white/10" style={{ backgroundColor: lyt.style?.primaryColor }}></div>
-                            <div className="w-8 h-8 rounded-full shadow-inner border border-white/10" style={{ backgroundColor: lyt.style?.accentColor }}></div>
+                          <div className="flex gap-4 items-center">
+                            <button
+                              onClick={() => copyToFM(generateLayoutXML(lyt))}
+                              className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-2xl text-xs font-bold shadow-lg shadow-purple-500/20 transition-all active:scale-95"
+                            >
+                              レイアウトXMLをコピー
+                            </button>
+                            <div className="flex gap-2">
+                              <div className="w-8 h-8 rounded-full shadow-inner border border-white/10" style={{ backgroundColor: lyt.style?.primaryColor }}></div>
+                              <div className="w-8 h-8 rounded-full shadow-inner border border-white/10" style={{ backgroundColor: lyt.style?.accentColor }}></div>
+                            </div>
                           </div>
                         </div>
 

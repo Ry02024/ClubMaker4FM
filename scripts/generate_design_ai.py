@@ -29,12 +29,20 @@ def generate_db_design(prompt):
             system_instruction = """
             You are an expert FileMaker database architect and UI/UX designer.
             Design a database structure and a modern UI layout based on the user's request.
+
+            [UI/UX Design Principles]
+            - Use a 12-column grid system (x: 0-11).
+            - Group related fields together visually.
+            - Ensure clear hierarchy (important info should be larger or more prominent).
+            - Use professional, modern color palettes (e.g., Slates, Purples, Indigos).
+            - Consider the 'theme' (dark, light, or glassmorphism).
+
             Return only a JSON object with the following structure:
             {
               "thoughts": [
                 "User wants X, so I am considering Y...",
-                "I will create table Z to handle A...",
-                "The layout will focus on B for better usability..."
+                "The layout will be a dashboard-style with high accessibility...",
+                "Grouping sales data at the top for better visibility..."
               ],
               "tables": [
                 {
@@ -62,7 +70,6 @@ def generate_db_design(prompt):
             }
             Use Japanese for 'thoughts'.
             Grid values: x(0-11), y(0+), w(1-12), h(1+).
-            Colors should be modern, vibrant, and professional.
             Avoid any markdown formatting, only return raw JSON.
             """
 
