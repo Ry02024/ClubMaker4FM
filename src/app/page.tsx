@@ -14,7 +14,8 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'schema' | 'layout'>('schema');
   const [design, setDesign] = useState<{
     tables: FMTable[],
-    layouts?: any[]
+    layouts?: any[],
+    thoughts?: string[]
   } | null>(null);
   const [isLaunching, setIsLaunching] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -120,12 +121,16 @@ export default function Home() {
         throw new Error(`AIの返答形式が正しくありません (tablesが見つかりません)。内容: ${JSON.stringify(extractedDesign).substring(0, 100)}...${details}`);
       }
 
-      setDesign(extractedDesign);
+      setDesign({
+        tables: extractedDesign.tables,
+        layouts: extractedDesign.layouts || [],
+        thoughts: extractedDesign.thoughts || []
+      });
       // レイアウトがあれば自動的にレイアウト表示へ
       if (extractedDesign.layouts?.length > 0) {
         setViewMode('layout');
       }
-      setStatus({ msg: '✅ 設計図が完成しました。FileMakerに反映できます。', isError: false });
+      setStatus({ msg: '✅ 設計図が完成しました！内容を確認してください', isError: false });
     } catch (err: any) {
       console.error(err);
       setStatus({ msg: `❌ エラー: ${err.message}`, isError: true });
@@ -152,7 +157,7 @@ export default function Home() {
   };
 
   const handleCreateFieldGUI = async (name: string, type: string, comment: string = 'AI生成') => {
-    setStatus({ msg: `GUI操作でフィールド "${name}" を作成中...`, isError: false });
+    setStatus({ msg: `GUI操作でフィールド "${name}" を生成中...`, isError: false });
     try {
       const res = await fetch('/api/create-field-gui', {
         method: 'POST',
@@ -161,21 +166,57 @@ export default function Home() {
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-      setStatus({ msg: `✅ フィールド "${name}" の作成命令を送信しました（FileMakerを確認してください）`, isError: false });
+      setStatus({ msg: `✅ フィールド "${name}" の生成命令を送信しました（FileMakerを確認してください）`, isError: false });
     } catch (err: any) {
       console.error(err);
-      setStatus({ msg: `❌ GUI作成エラー: ${err.message}`, isError: true });
+      setStatus({ msg: `❌ GUI生成エラー: ${err.message}`, isError: true });
+    }
+  };
+
+  const handleFinalizeFM = async () => {
+    setStatus({ msg: '変更を保存してダイアログを閉じています...', isError: false });
+    try {
+      const res = await fetch('/api/finalize-fm-dialog', { method: 'POST' });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+    } catch (err: any) {
+      console.error('Finalize failed:', err);
     }
   };
 
   const handleBatchCreateGUI = async (fields: any[]) => {
-    if (!confirm(`${fields.length} 個のフィールドを順番にGUI作成します。よろしいですか？`)) return;
-    for (const f of fields) {
-      await handleCreateFieldGUI(f.name, f.type, 'ClubMakerによる自動作成');
-      // 次の操作まで少し待機（負荷軽減のため2秒に延長）
-      await new Promise(r => setTimeout(r, 2000));
+    if (!confirm(`${fields.length} 個のフィールドを順番にGUI生成します。既に存在するフィールドはスキップされます。よろしいですか？`)) return;
+
+    setStatus({ msg: 'FileMakerの現在の状態を確認中...', isError: false });
+    let existingFields: string[] = [];
+    try {
+      const res = await fetch('/api/get-fm-fields');
+      const data = await res.json();
+      if (data.success) {
+        existingFields = data.fields.map((f: string) => f.toLowerCase());
+      }
+    } catch (err) {
+      console.warn('進捗の取得に失敗しました。全件作成を試みます。', err);
     }
-    setStatus({ msg: '✅ 全てのGUI作成プロセスが完了しました。', isError: false });
+
+    // 未作成のフィールドのみを抽出
+    const remainingFields = fields.filter(f => !existingFields.includes(f.name.toLowerCase()));
+
+    if (remainingFields.length === 0) {
+      setStatus({ msg: '✅ 全てのフィールドは既に存在します。', isError: false });
+      await handleFinalizeFM();
+      return;
+    }
+
+    setStatus({ msg: `${remainingFields.length} 個の未生成フィールドを処理します...`, isError: false });
+
+    for (const f of remainingFields) {
+      await handleCreateFieldGUI(f.name, f.type, 'ClubMakerによる自動生成');
+      // 次の操作まで少し待機
+      await new Promise(r => setTimeout(r, 1500));
+    }
+    await handleFinalizeFM();
+    setStatus({ msg: '✅ 全てのGUI生成プロセスが完了し、保存されました。', isError: false });
   };
 
   return (
@@ -252,8 +293,29 @@ export default function Home() {
                 disabled={isGenerating || cooldown > 0}
                 className="w-full mt-4 py-4 bg-white text-black font-black rounded-2xl transition-all hover:bg-slate-200 active:scale-95 shadow-xl shadow-white/5 disabled:opacity-50"
               >
-                {isGenerating ? '設計中...' : cooldown > 0 ? `待機中 (${cooldown}s)` : 'システムを設計する'}
+                {isGenerating ? '生成中...' : cooldown > 0 ? `待機中 (${cooldown}s)` : 'システムを生成する'}
               </button>
+
+              {isGenerating && (
+                <div className="mt-6 p-4 bg-white/5 border border-white/5 rounded-2xl animate-pulse">
+                  <p className="text-[10px] text-slate-500 font-bold uppercase mb-2">AIが考えたこと：</p>
+                  <p className="text-xs text-slate-400 italic">利用者様の意図を汲み取り、最適なテーブル構造を構築しています...</p>
+                </div>
+              )}
+
+              {design?.thoughts && (
+                <div className="mt-6 p-4 bg-purple-500/5 border border-purple-500/10 rounded-2xl">
+                  <p className="text-[10px] text-purple-400 font-bold uppercase mb-2 tracking-widest leading-loose">🎯 生成のポイント：</p>
+                  <ul className="space-y-2">
+                    {design.thoughts.map((thought, i) => (
+                      <li key={i} className="text-xs text-slate-400 flex gap-2">
+                        <span className="text-purple-500">•</span>
+                        {thought}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </section>
           </div>
 
@@ -311,7 +373,7 @@ export default function Home() {
                               onClick={() => handleBatchCreateGUI(table.fields)}
                               className="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition-all active:scale-95"
                             >
-                              一括GUI作成
+                              一括GUI生成
                             </button>
                           </div>
                         </div>
