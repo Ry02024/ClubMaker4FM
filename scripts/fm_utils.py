@@ -11,14 +11,14 @@ OVERLAY_PROCESS = None
 STATUS_FILE = "overlay_status.txt"
 
 def start_overlay():
-    global OVERLAY_PROCESS
     try:
         # Create initial status
         with open(STATUS_FILE, "w", encoding="utf-8") as f:
             f.write("準備中...")
             
         script_path = os.path.join(os.path.dirname(__file__), "overlay.py")
-        OVERLAY_PROCESS = subprocess.Popen(["python", script_path], shell=True)
+        # shell=True を使わずに実行することで、terminate() が確実に python プロセスに届くようにする
+        OVERLAY_PROCESS = subprocess.Popen([sys.executable, script_path])
     except Exception as e:
         print(f"Failed to start overlay: {e}", file=sys.stderr)
 
@@ -33,21 +33,41 @@ def stop_overlay():
     global OVERLAY_PROCESS
     try:
         update_overlay("EXIT") # Signal to self-destruct
-        time.sleep(0.5)
+        time.sleep(0.3)
         if OVERLAY_PROCESS:
-            OVERLAY_PROCESS.terminate()
+            # プロセスが生きていれば終了させる
+            if OVERLAY_PROCESS.poll() is None:
+                OVERLAY_PROCESS.terminate()
+                try:
+                    OVERLAY_PROCESS.wait(timeout=1)
+                except:
+                    OVERLAY_PROCESS.kill()
             OVERLAY_PROCESS = None
+        
+        # 強制終了のフォールバック (念のため)
+        if os.path.exists(STATUS_FILE):
+             try: os.remove(STATUS_FILE)
+             except: pass
     except:
         pass
 
 def set_input_block(block=True):
     """Block/Unblock user input (requires Admin privileges)."""
     try:
+        # 管理者権限が必要であることを明示的にログ出力
+        if block:
+            print("  > [Input Block] Attempting to block user input...", file=sys.stderr)
+        else:
+            print("  > [Input Block] Releasing user input...", file=sys.stderr)
+            
         res = ctypes.windll.user32.BlockInput(block)
         if res == 0 and block:
-            print("WARNING: Could not block input. Run as Administrator.", file=sys.stderr)
+            print("!! WARNING !!: Could not block input. Please run this script (or VS Code / Terminal) AS ADMINISTRATOR for complete safety.", file=sys.stderr)
+            # ブロックに失敗しても処理は継続するが、ユーザーには警告する
+        return res != 0
     except Exception as e:
         print(f"BlockInput error: {e}", file=sys.stderr)
+        return False
 
 def find_main_window(backend="uia"):
     """Find the main FileMaker Pro window, handling custom app titles."""
@@ -99,46 +119,64 @@ def close_unwanted_dialogs():
     except Exception as e:
         print(f"Error closing dialogs: {e}", file=sys.stderr)
 
+def find_manage_database_dialog():
+    """FileMakerの「データベースの管理」ダイアログをDesktopレベルから徹底的に探す"""
+    priority_keywords = ["データベースの管理", "Manage Database"]
+    fallback_keywords = ["Database", "の管理"]
+    exclude_keywords = ["レイアウト", "Layout", "スクリプト", "Script"]
+    
+    try:
+        desktop = Desktop(backend="uia")
+        # 1. 直接タイトルマッチング
+        for pk in priority_keywords:
+            win = desktop.window(title_re=f".*{pk}.*", control_type="Window", found_index=0)
+            if win.exists(timeout=0):
+                return win
+        
+        # 2. 全ウィンドウ全探索
+        for w in desktop.windows():
+            title = w.window_text()
+            if any(pk in title for pk in priority_keywords):
+                return w
+            if any(fk in title for fk in fallback_keywords) and not any(ek in title for ek in exclude_keywords):
+                return w
+                
+        # 3. win32 バックエンドでのフォールバック
+        print("  > UIA failed. Trying Win32 backend...", file=sys.stderr)
+        desktop_w32 = Desktop(backend="win32")
+        for w in desktop_w32.windows():
+            title = w.window_text()
+            if any(pk in title for pk in priority_keywords):
+                # win32で見つかった場合、UIAで繋ぎ直す (操作しやすいため)
+                return Desktop(backend="uia").window(handle=w.handle)
+    except Exception as e:
+        print(f"  > [find_manage_database_dialog Error] {e}", file=sys.stderr)
+    return None
+
 def ensure_manage_database():
     """
     Robustly ensure 'Manage Database' dialog is Open and Focused.
     """
     print("[Robust] Ensuring 'Manage Database' is active...", file=sys.stderr)
     
-    max_retries = 5
+    max_retries = 3
     for attempt in range(max_retries):
         try:
             # 1. Search for Dialog
-            desktop_uia = Desktop(backend="uia")
-            dialog = None
-            
-            for w in desktop_uia.windows():
-                t = w.window_text()
-                # Exact or substring match for target dialog
-                if "データベースの管理" in t or "Manage Database" in t:
-                    dialog = w
-                    break
+            dialog = find_manage_database_dialog()
             
             if dialog:
                 if dialog.get_show_state() == 2: # Minimized
                     dialog.restore()
                 dialog.set_focus()
-                print("  > Found and focused 'Manage Database'.", file=sys.stderr)
+                print(f"  > Found and focused '{dialog.window_text()}'.", file=sys.stderr)
                 return True
             
             # 2. Not found. Try to find Main Window to send Shortcut.
             main_win = find_main_window(backend="uia")
             
             if main_win:
-                t = main_win.window_text()
-                print(f"  > Main window found: '{t}'", file=sys.stderr)
-                
-                # If we are here, Dialog is NOT found.
-                # So whatever top window we found is likely the Main Window or an obstruction.
-                
-                # Try to clean up obstructions (ESC) ONLY if we've tried sending shortcut before and failed?
-                # Or just assume we can press ESC once safely?
-                # Let's try sending ESC only if we are not on attempt 0 (give it a shot first)
+                print(f"  > Main window found: '{main_win.window_text()}'", file=sys.stderr)
                 if attempt > 0:
                      print(f"  > Sending ESC to clear potential obstructions...", file=sys.stderr)
                      try:
@@ -154,7 +192,7 @@ def ensure_manage_database():
                     main_win.set_focus()
                     time.sleep(0.2)
                     pyautogui.hotkey('ctrl', 'shift', 'd')
-                    time.sleep(2.0) # Wait for animation/load
+                    time.sleep(2.0)
                 except Exception as e:
                     print(f"  > Failed to focus/send keys: {e}", file=sys.stderr)
             else:

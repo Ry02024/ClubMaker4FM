@@ -6,25 +6,8 @@ import ctypes
 import fm_utils  # Robust utility
 
 def find_manage_database_dialog(app):
-    """FileMakerの「データベースの管理」ダイアログを探す(正確なマッチング)"""
-    priority_keywords = ["データベースの管理", "Manage Database"]
-    fallback_keywords = ["Database", "の管理"]
-    exclude_keywords = ["レイアウト", "Layout", "スクリプト", "Script"]
-    
-    windows = app.windows()
-    for w in windows:
-        title = w.window_text()
-        if any(pk in title for pk in priority_keywords):
-            return w
-    for w in windows:
-        for child in w.children():
-            if any(pk in child.window_text() for pk in priority_keywords):
-                return child
-    for w in windows:
-        title = w.window_text()
-        if any(fk in title for fk in fallback_keywords) and not any(ek in title for ek in exclude_keywords):
-            return w
-    return None
+    """fm_utilsの共通関数を使用する"""
+    return fm_utils.find_manage_database_dialog()
 
 def handle_confirmation_dialog(app):
     """保存確認またはエラーダイアログが表示されたら適切に処理する"""
@@ -36,134 +19,239 @@ def handle_confirmation_dialog(app):
             if "FileMaker" in title and win.control_type() == "Window":
                 content_text = ""
                 try:
-                    texts = win.descendants(control_type="Text")
-                    content_text = "".join([t.window_text() for t in texts])
+                    # UI構成要素からテキストを抽出
+                    texts = win.descendants(control_type="Static")
+                    if not texts:
+                        texts = win.descendants(control_type="Text")
+                    content_text = "".join([t.window_text() for t in texts if t.window_text()])
                 except:
                     pass
 
+                print(f"  > [Dialog Debug] Title: '{title}', Content: '{content_text[:50]}...'", file=sys.stderr)
+
                 # 1. 保存確認の場合
-                if "保存" in content_text or "save" in content_text.lower():
-                    save_btn = win.child_window(title="保存(S)", control_type="Button")
+                if any(k in content_text for k in ["保存", "save", "変更しますか"]):
+                    save_btn = win.child_window(title_re=".*保存.*|.*はい.*|.*Yes.*", control_type="Button")
                     if save_btn.exists():
-                        print(f"  > [Dialog: Save] Clicking '保存(S)'", file=sys.stderr)
+                        print(f"  > [Dialog: Save] Clicking Save/Yes", file=sys.stderr)
                         save_btn.click_input()
                         time.sleep(0.5)
                         return True
                 
                 # 2. 名前重複エラーなどの警告の場合
-                if "すでに使用されています" in content_text or "already in use" in content_text.lower():
-                    ok_btn = win.child_window(title="OK", control_type="Button")
+                if any(k in content_text for k in ["すでに使用されています", "already in use", "無効", "invalid"]):
+                    ok_btn = win.child_window(title_re=".*OK.*", control_type="Button")
                     if ok_btn.exists():
-                        print(f"  > [Dialog: Error] Duplicate name detected. Clicking 'OK' to skip.", file=sys.stderr)
+                        print(f"  > [CRITICAL ERROR] Duplicate name or invalid name detected: {content_text}", file=sys.stderr)
                         ok_btn.click_input()
                         time.sleep(0.5)
-                        return "error_duplicate"
+                        # 重複エラー時は「異常」として即座に中断フラグを返す
+                        return "ABORT_ERROR"
 
                 # 3. その他の一般的な OK 案内の場合
-                ok_btn = win.child_window(title="OK", control_type="Button")
+                ok_btn = win.child_window(title_re=".*OK.*|.*閉じる.*|.*Close.*", control_type="Button")
                 if ok_btn.exists():
-                    print(f"  > [Dialog: Info] Clicking 'OK'", file=sys.stderr)
+                    print(f"  > [Dialog: Info] Clicking 'OK/Close'", file=sys.stderr)
                     ok_btn.click_input()
                     time.sleep(0.5)
                     return True
                     
     except Exception as e:
-        pass
+        print(f"  > [Dialog Handler Exception] {e}", file=sys.stderr)
     return False
 
-def fix_single_field(dialog_spec, old_name, new_name, new_type=None, comment="AI最適化"):
-    """単體フィールドの名前・型を修整する"""
-    print(f"\n[Fixing] {old_name} -> {new_name}", file=sys.stderr)
-    
-    handle_confirmation_dialog(None)
-
+def select_field_by_name(dialog_spec, field_name):
+    """
+    リストの最上部(Home)に移動し、Downキーで1つずつ走査して、
+    指定された名前のフィールドを確実に選択する。
+    """
     try:
-        # 1. フィールド一覧から対象を探す
         field_list = dialog_spec.child_window(auto_id="IDC_DEFFIELDS_FIELD_LIST", control_type="DataGrid")
         if not field_list.exists():
             return False
         
-        target_item = None
-        items = field_list.descendants(control_type="DataItem")
-        for item in items:
-            cells = item.children()
-            if cells:
-                name_texts = cells[0].descendants(control_type="Text")
-                if name_texts and name_texts[0].window_text() == old_name:
-                    target_item = item
-                    break
-        
-        if not target_item:
-            print(f"  > Error: Field '{old_name}' not found in list.", file=sys.stderr)
-            return False
-
-        # 2. 選択処理
-        print(f"  > Selecting field: {old_name}", file=sys.stderr)
-        cells = target_item.children()
-        if cells:
-             cells[0].click_input() 
-        else:
-             target_item.click_input()
-        time.sleep(0.5)
-
-        # 3. 状態確認
-        name_edit = dialog_spec.child_window(auto_id="IDC_DEFFIELDS_FIELDNAME_EDIT", control_type="Edit")
-        change_button = dialog_spec.child_window(auto_id="IDC_DEFFIELDS_SAVE_BUTTON", control_type="Button")
-        
-        if name_edit.get_value() != old_name:
-            print(f"  > Selection mismatch (Expected: {old_name}, Got: {name_edit.get_value()}). Retrying click...", file=sys.stderr)
-            target_item.click_input()
-            time.sleep(0.5)
-
-        # 4. 名前入力
-        print(f"  > Entering new name: {new_name}", file=sys.stderr)
-        name_edit.set_focus()
-        name_edit.type_keys("^a{BACKSPACE}", with_spaces=True)
-        time.sleep(0.2)
-        name_edit.type_keys(new_name, with_spaces=True)
+        field_list.set_focus()
+        # リストの一番上へ移動
+        import pyautogui
+        pyautogui.press('home')
         time.sleep(0.3)
         
-        # 5. 型変更
-        if new_type:
-            type_map = {
-                "Text": "t", "テキスト": "t",
-                "Number": "n", "数値": "n",
-                "Date": "d", "日付": "d",
-                "Time": "i", "時刻": "i",
-                "Timestamp": "m", "タイムスタンプ": "m",
-                "Container": "r", "オブジェクト": "r",
-                "Calculation": "c", "計算": "c",
-                "Summary": "s", "集計": "s"
-            }
-            type_combo = dialog_spec.child_window(auto_id="IDC_FIELD_TYPE_MENU", control_type="ComboBox")
-            key = type_map.get(new_type, "t")
-            type_combo.type_keys(key + "{ENTER}")
+        max_search = 300 # フィールド総数に応じた上限
+        
+        for i in range(max_search):
+            # 現在見えている(UIAで取得可能な)DataItemから、名前が一致するものを探す
+            # 1行ずつDownキーで送るため、常に現在の行はDataItemとして取得できるはず
+            items = field_list.descendants(control_type="DataItem")
+            
+            for item in items:
+                try:
+                    cells = item.children()
+                    if not cells: continue
+                    name_nodes = cells[0].descendants(control_type="Text")
+                    if not name_nodes: continue
+                    current_name = name_nodes[0].window_text()
+                    
+                    if current_name == field_name:
+                        # 名前が一致したら選択する
+                        try:
+                            item.select() # SelectionItem pattern
+                            time.sleep(0.1)
+                        except:
+                            item.click_input()
+                        
+                        # 確実に反映させるために最初のセルをクリック
+                        try:
+                            cells[0].click_input()
+                        except: pass
+                        
+                        print(f"  > Target found and selected: {field_name}", file=sys.stderr)
+                        return True
+                except: continue
+
+            # 次の行へ
+            pyautogui.press('down')
+            time.sleep(0.05)
+            
+        return False
+    except Exception as e:
+        print(f"  > Select error: {e}", file=sys.stderr)
+        return False
+
+def fix_single_field(dialog_spec, old_name, new_name, new_type=None, comment="AI最適化"):
+    """
+    1つのフィールドを上から順に探して修整する。
+    """
+    print(f"\n[Fixing] {old_name} -> {new_name}", file=sys.stderr)
+    handle_confirmation_dialog(None)
+
+    # 1. フィールドを上から順に検索して選択
+    if not select_field_by_name(dialog_spec, old_name):
+        print(f"  > Error: Field '{old_name}' not found. Skipping to prevent accidental creation.", file=sys.stderr)
+        return False
+
+    try:
+        # 2. 選択後の検証
+        name_edit = dialog_spec.child_window(auto_id="IDC_DEFFIELDS_FIELDNAME_EDIT", control_type="Edit")
+        if not name_edit.exists():
+             print("  > Error: Field Name edit box not found.", file=sys.stderr)
+             return False
+             
+        # 直接 window_text() を取得
+        actual_val = name_edit.window_text() or name_edit.get_value() or ""
+        print(f"  > Verification: Active field in Edit box is '{actual_val}' (Expected: '{old_name}')", file=sys.stderr)
+        
+        # 名前が一致しない場合でも、ひとまずフォーカスしてリトライを試みる
+        if actual_val != old_name:
+            print(f"  > Warning: Selection mismatch. Trying to re-select...", file=sys.stderr)
+            # 再度検索
+            if not select_field_by_name(dialog_spec, old_name):
+                 return False
+            actual_val = name_edit.window_text() or name_edit.get_value() or ""
+            if actual_val != old_name:
+                print(f"  > Selection still failing. Skipping '{old_name}'.", file=sys.stderr)
+                return False
+
+        # 3. 名前変更
+        print(f"  > Entering new name: '{new_name}'", file=sys.stderr)
+        # UIAの直接入力(set_text/set_edit_text)を試みる
+        entered_success = False
+        try:
+            name_edit.set_focus()
+            name_edit.set_text(new_name) # 速くて確実
+            time.sleep(0.2)
+            if name_edit.window_text() == new_name or name_edit.get_value() == new_name:
+                entered_success = True
+        except: pass
+        
+        if not entered_success:
+            # フォールバック: キー操作
+            print("  > Direct entry failed. Falling back to type_keys...", file=sys.stderr)
+            name_edit.click_input()
+            time.sleep(0.1)
+            name_edit.type_keys("^a{BACKSPACE}", with_spaces=True)
+            time.sleep(0.1)
+            name_edit.type_keys(new_name, with_spaces=True)
             time.sleep(0.3)
         
-        # 6. コメント入力
-        comment_edit = dialog_spec.child_window(auto_id="IDC_DEFFIELDS_FIELDCOMMENT_EDIT", control_type="Edit")
-        comment_edit.set_focus()
-        comment_edit.type_keys("^a{BACKSPACE}", with_spaces=True)
-        comment_edit.type_keys(comment, with_spaces=True)
-        time.sleep(0.3)
+        # 入力後の値を最終ダブルチェック
+        entered_val = name_edit.window_text() or name_edit.get_value() or ""
+        print(f"  > Value after entry: '{entered_val}'", file=sys.stderr)
         
-        # 7. 変更ボタン
-        print(f"  > Finalizing change...", file=sys.stderr)
-        dialog_spec.type_keys("%a")
-        time.sleep(0.5)
-        
-        handle_confirmation_dialog(None)
-
-        if change_button.exists() and change_button.is_enabled():
-             print("  > Button still enabled. Direct click...", file=sys.stderr)
-             change_button.click_input()
+        if not entered_val or entered_val == old_name:
+             print("  > Critical: Name was NOT updated in the edit box. Retrying with pyautogui...", file=sys.stderr)
+             name_edit.click_input()
+             pyautogui.hotkey('ctrl', 'a')
+             pyautogui.press('backspace')
+             pyautogui.typewrite(new_name)
              time.sleep(0.5)
-             handle_confirmation_dialog(None)
+
+        # 4. 型変更
+        if new_type:
+            try:
+                type_map = {
+                    "Text": "t", "テキスト": "t",
+                    "Number": "n", "数値": "n",
+                    "Date": "d", "日付": "d",
+                    "Time": "i", "時刻": "i",
+                    "Timestamp": "m", "タイムスタンプ": "m",
+                    "Container": "r", "オブジェクト": "r",
+                    "Calculation": "c", "計算": "c",
+                    "Summary": "s", "集計": "s"
+                }
+                type_combo = dialog_spec.child_window(auto_id="IDC_FIELD_TYPE_MENU", control_type="ComboBox")
+                key = type_map.get(new_type, "t")
+                type_combo.set_focus()
+                # 警告: ここで Enter を送ると「作成」が実行される可能性があるため、キーのみ送る
+                type_combo.type_keys(key)
+                time.sleep(0.3)
+            except Exception as e:
+                print(f"  > Warning: Type change failed: {e}", file=sys.stderr)
+        
+        # 5. コメント変更
+        try:
+            comment_edit = dialog_spec.child_window(auto_id="IDC_DEFFIELDS_FIELDCOMMENT_EDIT", control_type="Edit")
+            if comment_edit.exists():
+                comment_edit.set_focus()
+                # 確実にクリアしてからセット
+                comment_edit.set_text(comment)
+                time.sleep(0.2)
+        except: pass
+        
+        # 6. 変更確定
+        print(f"  > Finalizing change (Clicking 'Change')...", file=sys.stderr)
+        clicked = False
+        try:
+            # 変更ボタン (日本語: 変更, 英語: Change)
+            # 警告: 「作成」ボタン（IDC_DEFFIELDS_CREATE_BTN）は絶対にクリックしないよう厳格に特定
+            change_btn = dialog_spec.child_window(title_re="^変更$|^Change$", control_type="Button", auto_id="IDC_DEFFIELDS_CHANGE_BTN")
+            if not change_btn.exists():
+                # タイトルのみで再試行
+                change_btn = dialog_spec.child_window(title_re="^変更$|^Change$", control_type="Button")
             
-        print(f"  > Done: {old_name} -> {new_name}", file=sys.stderr)
+            if change_btn.exists():
+                print(f"  > Found 'Change' button. Clicking...", file=sys.stderr)
+                change_btn.click_input()
+                clicked = True
+        except Exception as e:
+            print(f"  > Change button search error: {e}", file=sys.stderr)
+
+        if not clicked:
+            # 日本語版の変更ショートカットは Alt+M (修整/Modify) の場合がある
+            print(f"  > Fallback: Sending Alt+M (Japanese Change shortcut)...", file=sys.stderr)
+            dialog_spec.type_keys("%m")
+            time.sleep(0.3)
+            # または Alt+A (Change)
+            dialog_spec.type_keys("%a")
+        
+        time.sleep(0.8) # 変更の反映待ち
+        
+        # 7. 完了確認 (Editボックスがクリアされるか、次の行が選択されるかなど)
+        # FileMakerでは「変更」を押すと、通常入力エリアが空になるか、引き続き選択されている
+        # ここでは特に待機のみ行い、ダイアログをチェック
+        handle_confirmation_dialog(None)
         return True
     except Exception as e:
-        print(f"  > Exception: {e}", file=sys.stderr)
+        print(f"  > Exception during fix: {e}", file=sys.stderr)
         return False
 
 def batch_fix(fix_list):
@@ -187,17 +275,44 @@ def batch_fix(fix_list):
             fm_utils.update_overlay(f"【{i+1}/{len(fix_list)}】 フィールド修整中...\n{old_name} ➔ {new_name}")
             
             if not fm_utils.ensure_manage_database():
-                print("CRITICAL: Could not recover Manage Database dialog. Aborting batch.", file=sys.stderr)
-                break
-                
-            dialog = find_manage_database_dialog(app)
+                print("CRITICAL: 'データベースの管理' ダイアログが見つかりません。FileMakerが前面にあり、ダイアログが開いているか確認してください。", file=sys.stderr)
+                # フォールバック: 現在アクティブなウィンドウを試す
+                try:
+                    desktop = Desktop(backend="uia")
+                    dialog = desktop.top_window()
+                    print(f"  > Fallback: Attempting to use top window: '{dialog.window_text()}'", file=sys.stderr)
+                except:
+                    break
+            else:
+                dialog = fm_utils.find_manage_database_dialog()
+
             if not dialog:
                 print("Error: Dialog open but handle not found?", file=sys.stderr)
                 errors.append(fix.get("old_name"))
                 continue
                 
-            dialog_spec = app.window(handle=dialog.handle)
+            dialog_spec = dialog
             dialog_spec.set_focus()
+
+            # Ensure "Fields" tab is selected (Reliable check)
+            try:
+                # auto_id や control_type でより確実に特定
+                tab_control = dialog_spec.child_window(control_type="Tab")
+                if tab_control.exists():
+                    fields_tab = tab_control.child_window(title="フィールド", control_type="TabItem")
+                    if fields_tab.exists():
+                        if not fields_tab.is_selected():
+                            print(f"  > Selecting 'Fields' tab...", file=sys.stderr)
+                            fields_tab.click_input()
+                            time.sleep(0.8)
+                    else:
+                        # フォールバック: キー送信
+                        dialog_spec.type_keys("%f")
+                        time.sleep(0.5)
+            except Exception as e:
+                print(f"  > [Tab Selection Warning] {e}. Trying Atl+F...", file=sys.stderr)
+                dialog_spec.type_keys("%f")
+                time.sleep(0.5)
 
             new_type = fix.get("new_type", None)
             comment = fix.get("comment", "ClubMaker最適化")
@@ -206,7 +321,14 @@ def batch_fix(fix_list):
                 success_count += 1
             else:
                 errors.append(old_name)
-            time.sleep(1.0) 
+            
+            # 各フィールド修整後にダイアログが出た場合を考慮
+            diag_res = handle_confirmation_dialog(app)
+            if diag_res == "ABORT_ERROR":
+                print("CRITICAL: Aborting due to duplicate name error.", file=sys.stderr)
+                fm_utils.update_overlay("エラー発生: 名前重複。中断します。")
+                break
+            time.sleep(0.5) 
         
         fm_utils.update_overlay("完了しました！")
         time.sleep(1.5)

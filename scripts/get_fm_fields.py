@@ -2,54 +2,20 @@ from pywinauto import Application, Desktop
 import json
 import sys
 import time
+import pyautogui
 
 def find_manage_database_dialog(app):
-    """FileMakerの「データベースの管理」ダイアログを探す(正確なマッチング)"""
-    # 優先キーワード
-    priority_keywords = ["データベースの管理", "Manage Database"]
-    fallback_keywords = ["Database", "の管理"]
-    exclude_keywords = ["レイアウト", "Layout", "スクリプト", "Script"]
-    
-    # 1. 最上位ウィンドウから優先キーワードで探す
-    windows = app.windows()
-    for w in windows:
-        title = w.window_text()
-        if any(pk in title for pk in priority_keywords):
-            print(f"Found priority dialog as top window: {title}", file=sys.stderr)
-            return w
-
-    # 2. メインウィンドウの子から優先キーワードで探す
-    for w in windows:
-        for child in w.children():
-            title = child.window_text()
-            if any(pk in title for pk in priority_keywords):
-                print(f"Found priority dialog as child: {title}", file=sys.stderr)
-                return child
-
-    # 3. フォールバック (ただし除外キーワードを含むものは避ける)
-    for w in windows:
-        title = w.window_text()
-        if any(fk in title for fk in fallback_keywords):
-            if not any(ek in title for ek in exclude_keywords):
-                print(f"Found fallback dialog as top window: {title}", file=sys.stderr)
-                return w
-                
-    for w in windows:
-        for child in w.children():
-            title = child.window_text()
-            if any(fk in title for fk in fallback_keywords):
-                if not any(ek in title for ek in exclude_keywords):
-                    print(f"Found fallback dialog as child: {title}", file=sys.stderr)
-                    return child
-                    
-    return None
+    """fm_utilsの共通関数を使用する"""
+    return fm_utils.find_manage_database_dialog()
 
 import fm_utils
 
 def get_existing_fields():
-    fields = []
+    fields_dict = {}  # 重複を避けるため名前をキーにする
+    total_expected = 0
     fm_utils.start_overlay()
-    fm_utils.update_overlay("FileMakerからフィールドを読み取っています...")
+    fm_utils.update_overlay("FileMakerから全フィールドを読み取っています...")
+    fm_utils.set_input_block(True)
     
     try:
         # Try to connect
@@ -67,61 +33,122 @@ def get_existing_fields():
         if not dialog:
             return {"success": False, "error": "Manage Database dialog not found."}
 
-        dialog_spec = app.window(handle=dialog.handle)
+        # dialog は Desktop オブジェクトで見つけた pywinauto wrapper
+        dialog_spec = dialog
         dialog_spec.set_focus()
         
         # 「フィールド」タブ項目を直接クリックして切り替え
         try:
-            tab_field = dialog_spec.child_window(title="フィールド", control_type="TabItem")
-            if tab_field.exists():
-                tab_field.click_input()
+            tab_control = dialog_spec.child_window(control_type="Tab")
+            fields_tab = tab_control.child_window(title="フィールド", control_type="TabItem")
+            if fields_tab.exists():
+                fields_tab.click_input()
                 time.sleep(0.5)
         except:
-            # フォールバック: Alt+F
             dialog_spec.type_keys("%f") 
             time.sleep(0.5)
 
-        # フィールドリスト (DataGrid) を取得
-        # DataGridをダイアログ直下から探索
-        field_list = dialog_spec.child_window(auto_id="IDC_DEFFIELDS_FIELD_LIST", control_type="DataGrid")
-        
-        if not field_list.exists():
-            # DataGridを全探索
-            grids = dialog_spec.descendants(control_type="DataGrid")
-            if grids:
-                field_list = grids[0]
-            else:
-                return {"success": False, "error": "Field list (DataGrid) not found. Please ensure Fields tab is selected."}
+        # 1. フィールド総数を取得 (Win32バックエンド併用で高速化)
+        count_label = ""
+        try:
+            from pywinauto import Desktop as DesktopW32
+            win_w32 = DesktopW32(backend="win32").window(handle=dialog_spec.handle)
+            # 全コントロールから「フィールド」を含むものを探す
+            for ctrl in win_w32.descendants():
+                t = ctrl.window_text()
+                if t and "フィールド" in t and any(char.isdigit() for char in t):
+                    count_label = t
+                    break
+        except: pass
 
-        items = field_list.descendants(control_type="DataItem")
+        if not count_label:
+            # UIAでのフォールバック
+            try:
+                for el in dialog_spec.descendants(control_type="Text"):
+                    t = el.window_text()
+                    if t and "フィールド" in t and any(char.isdigit() for char in t):
+                        count_label = t
+                        break
+            except: pass
+
+        total_expected = 0
+        if count_label:
+            import re
+            # 「13 / 26 フィールド」のような形式を考慮し、最も大きい数字または最後尾の数字を取得
+            matches = re.findall(r'(\d+)', count_label)
+            if matches:
+                total_expected = int(matches[-1]) 
+                print(f"  > Detected total (last match): {total_expected} from '{count_label}'", file=sys.stderr)
         
-        for item_wrapper in items:
-            cells = item_wrapper.children()
-            if len(cells) >= 2:
-                name_text = ""
-                type_text = ""
-                
-                # 名前 (1列目)
-                name_texts = cells[0].descendants(control_type="Text")
-                if name_texts:
-                    name_text = name_texts[0].window_text()
-                
-                # タイプ (2列目)
-                type_texts = cells[1].descendants(control_type="Text")
-                if type_texts:
-                    type_text = type_texts[0].window_text()
-                
-                if name_text:
-                    fields.append({"name": name_text, "type": type_text})
+        if total_expected == 0:
+             print("  > Warning: Could not detect total field count. Using safety scan limit (50 steps buffer).", file=sys.stderr)
         
-        fm_utils.update_overlay(f"読み取り完了: {len(fields)}件")
-        time.sleep(1.0)
-        return {"success": True, "fields": fields}
+        # フィールドリスト (DataGrid) を取得
+        field_list = dialog_spec.child_window(auto_id="IDC_DEFFIELDS_FIELD_LIST", control_type="DataGrid")
+        if not field_list.exists():
+            grids = dialog_spec.descendants(control_type="DataGrid")
+            if grids: field_list = grids[0]
+            else: return {"success": False, "error": "Field list not found."}
+
+        # 2. スクロールしながら取得
+        field_list.set_focus()
+        pyautogui.press('home')
+        time.sleep(0.3)
+
+        # 取得したフィールドの順序と内容を保持
+        ordered_fields = []
+        
+        # ユーザーの要望: 「1/13」のようにリアルタイムで1件ずつカウントを表示
+        for i in range(total_expected if total_expected > 0 else 100):
+            current_count = i + 1
+            fm_utils.update_overlay(f"読み取り中: {current_count} / {total_expected if total_expected > 0 else '??'}")
+            
+            # 再取得して現在のDataItem（フォーカスされている可能性があるもの）を特定
+            try:
+                # 画面に見えているアイテムの中から、現在のアクティブなものを推測するか、
+                # 単に現在のDataGridの状態から情報を抜く
+                # 1件ずつ移動するので、descendantsの最初の数件に目的のデータがあるはず
+                items = dialog_spec.child_window(auto_id="IDC_DEFFIELDS_FIELD_LIST", control_type="DataGrid").descendants(control_type="DataItem")
+                
+                # 現在の「行」を特定する（多くの場合、一番上の見えるアイテムか、選択されているもの）
+                # ここでは「新しく見つかった名前」を順に溜めていく
+                for item in items:
+                    try:
+                        cells = item.children()
+                        if not cells: continue
+                        
+                        # 名前
+                        n_nodes = cells[0].descendants(control_type="Text")
+                        n_text = n_nodes[0].window_text() if n_nodes else cells[0].window_text()
+                        
+                        # タイプ
+                        t_text = ""
+                        if len(cells) > 1:
+                            t_nodes = cells[1].descendants(control_type="Text")
+                            t_text = t_nodes[0].window_text() if t_nodes else cells[1].window_text()
+                        
+                        if n_text and not any(f["name"] == n_text for f in ordered_fields):
+                            if not any(k in n_text for k in ["名前", "タイプ", "オプション"]): # ヘッダ除外
+                                ordered_fields.append({"name": n_text, "type": t_text})
+                                break # 1つ見つかればこの行の処理はOK
+                    except: continue
+            except: pass
+
+            # 次へ移動
+            if current_count < total_expected:
+                pyautogui.press('down')
+                time.sleep(0.05) # 短い待機でリズムを作る
+            else:
+                break
+
+        fm_utils.update_overlay(f"読み取り完了: {len(ordered_fields)}件")
+        return {"success": True, "fields": ordered_fields}
 
     except Exception as e:
         import traceback
         return {"success": False, "error": str(e), "traceback": traceback.format_exc()}
     finally:
+        fm_utils.set_input_block(False)
         fm_utils.stop_overlay()
 
 if __name__ == "__main__":
