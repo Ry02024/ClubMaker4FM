@@ -193,7 +193,7 @@ export default function Home() {
   };
 
   const handleBatchCreateGUI = async (fields: any[]) => {
-    if (!confirm(`${fields.length} 個のフィールドを順番にGUI生成します。既に存在するフィールドはスキップされます。よろしいですか？`)) return;
+    if (!confirm(`${fields.length} 個のフィールドを順番にGUI生成します。\n既存フィールドはスキップされます。\n\n開始してよろしいですか？`)) return;
 
     setStatus({ msg: 'FileMakerの現在の状態を確認中...', isError: false });
     let existingFields: string[] = [];
@@ -206,7 +206,6 @@ export default function Home() {
     } catch (err) {
       console.warn('進捗の取得に失敗しました。全件作成を試みます。', err);
     }
-
     const remainingFields = fields.filter(f => !existingFields.includes(f.name.toLowerCase()));
 
     if (remainingFields.length === 0) {
@@ -214,6 +213,25 @@ export default function Home() {
       await handleFinalizeFM();
       return;
     }
+
+    // setStatus({ msg: 'FileMakerの現在の状態を確認中...', isError: false });
+    // let existingFields: string[] = [];
+    // try {
+    //   const res = await fetch(`/api/get-fm-fields?t=${Date.now()}`);
+    //   const data = await res.json();
+    //   if (data.success) {
+    //     existingFields = data.fields.map((f: any) => f.name.toLowerCase());
+    //   }
+    // } catch (err) {
+    //   console.warn('進捗の取得に失敗しました。全件作成を試みます。', err);
+    // }
+    // const remainingFields = fields.filter(f => !existingFields.includes(f.name.toLowerCase()));
+
+    // if (remainingFields.length === 0) {
+    //   setStatus({ msg: '✅ 全てのフィールドは既に存在します。', isError: false });
+    //   await handleFinalizeFM();
+    //   return;
+    // }
 
     setStatus({ msg: `${remainingFields.length} 件のフィールドを一括生成中...（FileMakerを確認してください）`, isError: false });
 

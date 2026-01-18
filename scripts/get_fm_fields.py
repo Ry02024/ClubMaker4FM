@@ -36,16 +36,20 @@ def get_existing_fields():
         dialog_spec = dialog
 
         # 1. フィールド総数を取得
-        total_expected = 0
+        total_expected = -1
         import re
         try:
             # 「XXX フィールド」を探す
+            # 英語: "0 fields", "3 fields" etc
+            # 日本語: "0 フィールド", "3 フィールド"
             for el in dialog_spec.descendants(control_type="Text"):
                 t = (el.window_text() or "").strip()
-                if "フィールド" in t:
+                if "フィールド" in t or "Field" in t or "field" in t:
                     m = re.search(r'(\d+)', t)
                     if m:
-                        total_expected = int(m.group(1))
+                        val = int(m.group(1))
+                        # あまりに大きい数字は誤検出の可能性があるので除外するなどしてもよいが、一旦信じる
+                        total_expected = val
                         print(f"  > Detected total_expected: {total_expected} from '{t}'", file=sys.stderr)
                         break
         except: pass
@@ -59,8 +63,16 @@ def get_existing_fields():
         # 取得したフィールドの順序と内容を保持
         ordered_fields = []
         
-        # 最大ループ回数を少し余裕持たせる
-        max_loops = max(total_expected * 2, 20) if total_expected > 0 else 100
+        # 最大ループ回数を決定
+        if total_expected == 0:
+             # 明示的に0件とわかった場合 -> ほぼループ不要だが、念のため2回
+             max_loops = 2
+        elif total_expected > 0:
+             # 件数がわかっている場合 -> ある程度余裕を持たせる
+             max_loops = max(total_expected * 2, 20)
+        else:
+             # 検出失敗 (-1) の場合 -> 安全策で多めに回す（以前の挙動に近い）
+             max_loops = 50
         
         for i in range(max_loops):
             fm_utils.update_overlay(f"読み取り中: {len(ordered_fields)} / {total_expected if total_expected > 0 else '??'}")
