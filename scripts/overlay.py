@@ -24,6 +24,7 @@ def update_label(label, root):
 
 def main():
     root = tk.Tk()
+    root.title("ClubMaker_Overlay") # Set title for potential identification
     root.overrideredirect(True) # Frameless
     root.attributes('-topmost', True) # Always on top
     root.attributes('-alpha', 0.85) # Slight transparency

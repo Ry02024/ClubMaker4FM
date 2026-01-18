@@ -2,27 +2,7 @@
   "success": true,
   "fields": [
     {
-      "name": "明細ID",
-      "type": "テキスト"
-    },
-    {
-      "name": "伝票ID",
-      "type": "テキスト"
-    },
-    {
-      "name": "商品ID",
-      "type": "テキスト"
-    },
-    {
-      "name": "数量",
-      "type": "テキスト"
-    },
-    {
-      "name": "単価",
-      "type": "テキスト"
-    },
-    {
-      "name": "小計",
+      "name": "id",
       "type": "テキスト"
     }
   ]

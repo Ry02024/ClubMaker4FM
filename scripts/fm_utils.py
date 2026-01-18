@@ -56,15 +56,12 @@ def set_input_block(block=True):
     try:
         # 管理者権限が必要であることを明示的にログ出力
         if block:
-            print("  > [Input Block] Attempting to block user input...", file=sys.stderr)
+            print("  > [Input Block] Skipping physical block for safety.", file=sys.stderr)
         else:
-            print("  > [Input Block] Releasing user input...", file=sys.stderr)
+            print("  > [Input Block] Releasing (was skipped).", file=sys.stderr)
             
-        res = ctypes.windll.user32.BlockInput(block)
-        if res == 0 and block:
-            print("!! WARNING !!: Could not block input. Please run this script (or VS Code / Terminal) AS ADMINISTRATOR for complete safety.", file=sys.stderr)
-            # ブロックに失敗しても処理は継続するが、ユーザーには警告する
-        return res != 0
+        # 安全のため、実際のブロックは行わず常に成功を返す
+        return True
     except Exception as e:
         print(f"BlockInput error: {e}", file=sys.stderr)
         return False
@@ -121,37 +118,52 @@ def close_unwanted_dialogs():
 
 def find_manage_database_dialog():
     """FileMakerの「データベースの管理」ダイアログをDesktopレベルから徹底的に探す"""
-    priority_keywords = ["データベースの管理", "Manage Database"]
-    fallback_keywords = ["Database", "の管理"]
-    exclude_keywords = ["レイアウト", "Layout", "スクリプト", "Script"]
+    priority_keywords = ["データベースの管理", "Manage Database", "Manage", "の管理"]
     
     try:
+        # Title regex for speed
         desktop = Desktop(backend="uia")
-        # 1. 直接タイトルマッチング
-        for pk in priority_keywords:
-            win = desktop.window(title_re=f".*{pk}.*", control_type="Window", found_index=0)
-            if win.exists(timeout=0):
-                return win
+        # 0.5s timeout for fast check
+        win = desktop.window(title_re=".*(データベースの管理|Manage Database).*", control_type="Window")
+        if win.exists(timeout=0.1):
+            return win
         
-        # 2. 全ウィンドウ全探索
-        for w in desktop.windows():
-            title = w.window_text()
-            if any(pk in title for pk in priority_keywords):
-                return w
-            if any(fk in title for fk in fallback_keywords) and not any(ek in title for ek in exclude_keywords):
-                return w
-                
-        # 3. win32 バックエンドでのフォールバック
-        print("  > UIA failed. Trying Win32 backend...", file=sys.stderr)
+        # 1. win32 バックエンドでのフォールバック (タイトルが完全一致しない場合など)
         desktop_w32 = Desktop(backend="win32")
         for w in desktop_w32.windows():
+            if not w.is_visible(): continue
             title = w.window_text()
             if any(pk in title for pk in priority_keywords):
-                # win32で見つかった場合、UIAで繋ぎ直す (操作しやすいため)
-                return Desktop(backend="uia").window(handle=w.handle)
-    except Exception as e:
-        print(f"  > [find_manage_database_dialog Error] {e}", file=sys.stderr)
+                # 取得できたら UIA でラップして返す
+                try:
+                    return Desktop(backend="uia").window(handle=w.handle)
+                except:
+                    return w # Win32 wrapper as last resort
+    except:
+        pass
     return None
+
+def select_fields_tab(dialog):
+    """「フィールド」タブを確実に選択する"""
+    try:
+        # 日本語: フィールド(F) または フィールド
+        # 英語: Fields または Fields (F)
+        tab_item = dialog.child_window(title_re="フィールド.*|Fields.*", control_type="TabItem")
+        if tab_item.exists():
+            if not tab_item.is_selected():
+                print("  > Selecting 'Fields' tab...", file=sys.stderr)
+                tab_item.click_input()
+                time.sleep(0.5)
+            return True
+        else:
+            # ショートカット Alt+F (日本語/英語共通)
+            print("  > Tab item not found via title. Trying Alt+F shortcut...", file=sys.stderr)
+            dialog.type_keys("%f")
+            time.sleep(0.5)
+            return True
+    except Exception as e:
+        print(f"  > Tab selection error: {e}", file=sys.stderr)
+        return False
 
 def ensure_manage_database():
     """

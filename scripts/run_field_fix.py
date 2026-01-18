@@ -14,8 +14,13 @@ def run_script(script_name, args=None):
     # shell=True を使わず、リスト形式で渡すことでクォートの問題を回避
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
     
-    if result.stderr:
-        print(f"Error running {script_name}: {result.stderr}", file=sys.stderr)
+    # 正常終了でも stderr にログが出力される場合を考慮
+    if result.returncode != 0:
+        print(f"Error running {script_name} (Code {result.returncode}): {result.stderr}", file=sys.stderr)
+    elif result.stderr:
+        # ログとして stderr を表示 (デバッグ用)
+        print(f"Log from {script_name}: {result.stderr}", file=sys.stderr)
+        
     return result.stdout.strip()
 
 def main():

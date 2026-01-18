@@ -6,7 +6,7 @@ import fs from 'fs';
 export async function POST() {
     // Pythonスクリプトのパス
     const scriptPath = path.join(process.cwd(), 'scripts', 'launch_fm.py');
-    const defaultFmPath = 'C:\\Program Files\\FileMaker\\FileMaker Pro\\FileMaker Pro.exe';
+    const defaultFmPath = 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\FileMaker Pro.lnk';
 
     if (!fs.existsSync(scriptPath)) {
         return NextResponse.json({
