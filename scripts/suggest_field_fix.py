@@ -2,6 +2,7 @@ import os
 import sys
 import json
 from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 
 # Load .env file
@@ -58,16 +59,56 @@ def suggest_field_fix(current_fields, context=""):
 上記のフィールドを最適化してください。日本語で分かりやすい名前に変更し、適切な型を提案してください。
 """
             
-            response = client.models.generate_content(
-                model=model_name,
-                contents=user_prompt,
-                config={
-                    "system_instruction": system_instruction,
-                    "temperature": 0.3
-                }
-            )
+            # google-genaiの最新APIを使用
+            try:
+                # system_instructionをcontentsに含める形式に変更
+                full_prompt = f"{system_instruction}\n\n{user_prompt}"
+                
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=[
+                        types.Part(text=full_prompt)
+                    ],
+                    config=types.GenerateContentConfig(
+                        temperature=0.3
+                    )
+                )
+            except Exception as api_error:
+                # API呼び出しエラーを詳細に記録
+                import traceback
+                error_trace = traceback.format_exc()
+                print(f"API call error: {str(api_error)}", file=sys.stderr)
+                print(f"API call traceback: {error_trace}", file=sys.stderr)
+                raise
             
-            text = response.text.strip()
+            # レスポンスの取得（複数の方法を試す）
+            text = None
+            if hasattr(response, 'text') and response.text:
+                text = response.text.strip()
+            elif hasattr(response, 'candidates') and response.candidates:
+                # 代替方法: candidatesから取得
+                candidate = response.candidates[0]
+                if hasattr(candidate, 'content') and candidate.content:
+                    if hasattr(candidate.content, 'parts') and candidate.content.parts:
+                        text = candidate.content.parts[0].text.strip() if hasattr(candidate.content.parts[0], 'text') else None
+                    elif hasattr(candidate.content, 'text'):
+                        text = candidate.content.text.strip()
+            
+            if not text:
+                # デバッグ情報を出力
+                debug_info = {
+                    "response_type": str(type(response)),
+                    "response_attrs": dir(response),
+                    "has_text": hasattr(response, 'text'),
+                    "has_candidates": hasattr(response, 'candidates'),
+                }
+                if hasattr(response, 'candidates') and response.candidates:
+                    debug_info["candidate_type"] = str(type(response.candidates[0]))
+                    debug_info["candidate_attrs"] = dir(response.candidates[0])
+                
+                error_msg = f"Response has no accessible text. Debug info: {json.dumps(debug_info, indent=2)}"
+                print(error_msg, file=sys.stderr)
+                raise ValueError(error_msg)
             
             # マークダウンのコードブロックを除去
             if "```json" in text:
@@ -78,20 +119,55 @@ def suggest_field_fix(current_fields, context=""):
             suggestions = json.loads(text)
             return {"success": True, "suggestions": suggestions}
             
-        except Exception:
+        except Exception as e:
+            # エラーの詳細をstderrに出力（デバッグ用）
+            import traceback
+            error_trace = traceback.format_exc()
+            print(f"API key error: {str(e)}", file=sys.stderr)
+            print(f"Traceback: {error_trace}", file=sys.stderr)
             continue
     
     return {"success": False, "error": "All API keys failed"}
 
 if __name__ == "__main__":
-    if len(sys.argv) >= 2:
-        try:
-            data = json.loads(sys.argv[1])
-            current_fields = data.get("currentFields", [])
-            context = data.get("context", "")
-            result = suggest_field_fix(current_fields, context)
-            print(json.dumps(result, ensure_ascii=True))
-        except json.JSONDecodeError as e:
-            print(json.dumps({"success": False, "error": f"Invalid JSON: {e}"}, ensure_ascii=True))
-    else:
-        print(json.dumps({"success": False, "error": "No input provided"}, ensure_ascii=False))
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Suggest field fixes using AI')
+    parser.add_argument('--file', type=str, help='Path to JSON file containing currentFields and context')
+    parser.add_argument('data', nargs='?', help='JSON string (deprecated, use --file instead)')
+    
+    args = parser.parse_args()
+    
+    try:
+        if args.file:
+            # 一時ファイルから読み取る
+            with open(args.file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        elif args.data:
+            # 後方互換性のため、コマンドライン引数もサポート
+            data = json.loads(args.data)
+        else:
+            print(json.dumps({"success": False, "error": "No input provided. Use --file option or provide JSON string."}, ensure_ascii=False))
+            sys.exit(1)
+        
+        current_fields = data.get("currentFields", [])
+        context = data.get("context", "")
+        result = suggest_field_fix(current_fields, context)
+        print(json.dumps(result, ensure_ascii=True))
+    except json.JSONDecodeError as e:
+        print(json.dumps({"success": False, "error": f"Invalid JSON: {e}"}, ensure_ascii=True))
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(json.dumps({"success": False, "error": f"File not found: {e}"}, ensure_ascii=True))
+        sys.exit(1)
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(json.dumps({
+            "success": False, 
+            "error": f"Unexpected error: {str(e)}",
+            "traceback": error_details
+        }, ensure_ascii=True))
+        # エラー詳細をstderrにも出力（デバッグ用）
+        print(f"Error details: {error_details}", file=sys.stderr)
+        sys.exit(1)

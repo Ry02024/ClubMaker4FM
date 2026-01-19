@@ -2,8 +2,308 @@
   "success": true,
   "fields": [
     {
-      "name": "id",
-      "type": "テキスト"
+      "name": "領収書_番号",
+      "type": "日付"
+    },
+    {
+      "name": "支払い_区分",
+      "type": "日付"
+    },
+    {
+      "name": "指名_区分",
+      "type": "日付"
+    },
+    {
+      "name": "成績_ポイント",
+      "type": "日付"
+    },
+    {
+      "name": "当日作業_記録",
+      "type": "日付"
+    },
+    {
+      "name": "変数_顧客",
+      "type": "日付"
+    },
+    {
+      "name": "変数_設定",
+      "type": "日付"
+    },
+    {
+      "name": "変数_注文",
+      "type": "日付"
+    },
+    {
+      "name": "変数_汎用_01",
+      "type": "日付"
+    },
+    {
+      "name": "変数_汎用_00",
+      "type": "日付"
+    },
+    {
+      "name": "変数_汎用",
+      "type": "日付"
+    },
+    {
+      "name": "flg_deposit",
+      "type": "日付"
+    },
+    {
+      "name": "flg_cash",
+      "type": "日付"
+    },
+    {
+      "name": "flg_card",
+      "type": "日付"
+    },
+    {
+      "name": "fees",
+      "type": "日付"
+    },
+    {
+      "name": "earnings_staff",
+      "type": "日付"
+    },
+    {
+      "name": "earnings",
+      "type": "日付"
+    },
+    {
+      "name": "dp2",
+      "type": "日付"
+    },
+    {
+      "name": "dp",
+      "type": "日付"
+    },
+    {
+      "name": "dhn_pt",
+      "type": "日付"
+    },
+    {
+      "name": "dhn_cnt",
+      "type": "日付"
+    },
+    {
+      "name": "customers",
+      "type": "日付"
+    },
+    {
+      "name": "crms_app",
+      "type": "日付"
+    },
+    {
+      "name": "app",
+      "type": "日付"
+    },
+    {
+      "name": "変数_時間別集計",
+      "type": "日付"
+    },
+    {
+      "name": "変数_日時",
+      "type": "日付"
+    },
+    {
+      "name": "変数_指名",
+      "type": "日付"
+    },
+    {
+      "name": "変数_担当者",
+      "type": "日付"
+    },
+    {
+      "name": "変数_戻り先",
+      "type": "日付"
+    },
+    {
+      "name": "変数_値リスト",
+      "type": "日付"
+    },
+    {
+      "name": "変数_伝票",
+      "type": "日付"
+    },
+    {
+      "name": "変数_一時",
+      "type": "日付"
+    },
+    {
+      "name": "変数_ライブラリ",
+      "type": "日付"
+    },
+    {
+      "name": "変数_メニュー",
+      "type": "日付"
+    },
+    {
+      "name": "変数_ボトル",
+      "type": "日付"
+    },
+    {
+      "name": "変数_パスワード",
+      "type": "日付"
+    },
+    {
+      "name": "変数_タイムチャージ",
+      "type": "日付"
+    },
+    {
+      "name": "変数_キャスト日報",
+      "type": "日付"
+    },
+    {
+      "name": "変数_キャスト",
+      "type": "日付"
+    },
+    {
+      "name": "売上_月報_集計",
+      "type": "日付"
+    },
+    {
+      "name": "売上_日報_集計",
+      "type": "日付"
+    },
+    {
+      "name": "卓_名称",
+      "type": "日付"
+    },
+    {
+      "name": "卓_マップ_情報",
+      "type": "日付"
+    },
+    {
+      "name": "優良顧客_フラグ",
+      "type": "日付"
+    },
+    {
+      "name": "タイムチャージ_金額",
+      "type": "日付"
+    },
+    {
+      "name": "pay_attrs",
+      "type": "日付"
+    },
+    {
+      "name": "pay",
+      "type": "日付"
+    },
+    {
+      "name": "outgoing",
+      "type": "日付"
+    },
+    {
+      "name": "order_sum",
+      "type": "日付"
+    },
+    {
+      "name": "order",
+      "type": "日付"
+    },
+    {
+      "name": "opensys",
+      "type": "日付"
+    },
+    {
+      "name": "mkb",
+      "type": "日付"
+    },
+    {
+      "name": "menus",
+      "type": "日付"
+    },
+    {
+      "name": "menu_kubun",
+      "type": "日付"
+    },
+    {
+      "name": "menu_attrs",
+      "type": "日付"
+    },
+    {
+      "name": "manager",
+      "type": "日付"
+    },
+    {
+      "name": "log",
+      "type": "日付"
+    },
+    {
+      "name": "layouts",
+      "type": "日付"
+    },
+    {
+      "name": "jyn",
+      "type": "日付"
+    },
+    {
+      "name": "inve",
+      "type": "日付"
+    },
+    {
+      "name": "incoming",
+      "type": "日付"
+    },
+    {
+      "name": "hourly",
+      "type": "日付"
+    },
+    {
+      "name": "hns",
+      "type": "日付"
+    },
+    {
+      "name": "flg_ukake",
+      "type": "日付"
+    },
+    {
+      "name": "flg_simei",
+      "type": "日付"
+    },
+    {
+      "name": "flg_kyubiki",
+      "type": "日付"
+    },
+    {
+      "name": "config",
+      "type": "日付"
+    },
+    {
+      "name": "company",
+      "type": "日付"
+    },
+    {
+      "name": "colls",
+      "type": "日付"
+    },
+    {
+      "name": "casts",
+      "type": "日付"
+    },
+    {
+      "name": "cast_drpt",
+      "type": "日付"
+    },
+    {
+      "name": "btlout",
+      "type": "日付"
+    },
+    {
+      "name": "btlin",
+      "type": "日付"
+    },
+    {
+      "name": "btl_back",
+      "type": "日付"
+    },
+    {
+      "name": "btl",
+      "type": "日付"
+    },
+    {
+      "name": "bills",
+      "type": "日付"
     }
   ]
 }

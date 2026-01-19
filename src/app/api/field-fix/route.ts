@@ -2,8 +2,10 @@ import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 
 export async function POST(request: Request) {
+    let tempFile: string | null = null;
     try {
         const { fixes } = await request.json();
 
@@ -15,12 +17,22 @@ export async function POST(request: Request) {
         const venvPythonPath = path.join(process.cwd(), '.venv', 'Scripts', 'python.exe');
         const pythonCommand = fs.existsSync(venvPythonPath) ? `"${venvPythonPath}"` : 'python';
 
-        // JSON引数を安全にエスケープ
-        const fixesJson = JSON.stringify(fixes).replace(/"/g, '\\"');
-        const command = `${pythonCommand} "${scriptPath}" "${fixesJson}"`;
+        // 一時ファイルにJSONデータを保存（コマンドライン引数の長さ制限回避）
+        const tempDir = os.tmpdir();
+        tempFile = path.join(tempDir, `clubmaker_fixes_${Date.now()}.json`);
+        const fixesData = JSON.stringify(fixes, null, 2);
+        fs.writeFileSync(tempFile, fixesData, 'utf-8');
+
+        // ファイルパスを引数として渡す
+        const command = `${pythonCommand} "${scriptPath}" --file "${tempFile}"`;
 
         return new Promise((resolve) => {
-            exec(command, { timeout: 120000 }, (error, stdout, stderr) => {
+            exec(command, { timeout: 300000, maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
+                // 一時ファイルを削除
+                if (tempFile && fs.existsSync(tempFile)) {
+                    try { fs.unlinkSync(tempFile); } catch (e) { /* ignore */ }
+                }
+
                 console.log('Field Fixer Output:', stdout);
                 if (stderr) console.error('Field Fixer Stderr:', stderr);
 
@@ -28,7 +40,8 @@ export async function POST(request: Request) {
                     resolve(NextResponse.json({
                         success: false,
                         error: error.message,
-                        log: stdout
+                        log: stdout,
+                        stderr: stderr
                     }, { status: 500 }));
                 } else {
                     try {
@@ -40,13 +53,18 @@ export async function POST(request: Request) {
                     } catch (e) {
                         resolve(NextResponse.json({
                             success: true,
-                            log: stdout
+                            log: stdout,
+                            stderr: stderr
                         }));
                     }
                 }
             });
         });
     } catch (err: any) {
+        // 一時ファイルを削除
+        if (tempFile && fs.existsSync(tempFile)) {
+            try { fs.unlinkSync(tempFile); } catch (e) { /* ignore */ }
+        }
         return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 }

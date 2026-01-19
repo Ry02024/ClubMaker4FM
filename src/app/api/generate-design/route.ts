@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 
 export async function POST(request: Request) {
     try {
@@ -15,11 +16,24 @@ export async function POST(request: Request) {
         const venvPythonPath = path.join(process.cwd(), '.venv', 'Scripts', 'python.exe');
         const pythonCommand = fs.existsSync(venvPythonPath) ? `"${venvPythonPath}"` : 'python';
 
-        // プロンプトを安全に渡す
-        const command = `${pythonCommand} "${scriptPath}" "${prompt.replace(/"/g, '\\"')}"`;
+        // プロンプトを一時ファイルに保存（改行を保持）
+        const tempDir = os.tmpdir();
+        const tempFile = path.join(tempDir, `clubmaker_prompt_${Date.now()}.txt`);
+        fs.writeFileSync(tempFile, prompt, 'utf-8');
+
+        // ファイルパスを引数として渡す
+        const command = `${pythonCommand} "${scriptPath}" --file "${tempFile}"`;
 
         return new Promise((resolve) => {
-            exec(command, (error, stdout, stderr) => {
+            exec(command, { maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
+                // 一時ファイルを削除
+                try { fs.unlinkSync(tempFile); } catch (e) { /* ignore */ }
+
+                // Pythonからのログ出力を表示
+                if (stderr) {
+                    console.log('Python Output:', stderr);
+                }
+
                 if (error) {
                     console.error('AI Generation Error:', error);
                     resolve(NextResponse.json({ success: false, error: error.message, details: stdout }, { status: 500 }));

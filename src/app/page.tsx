@@ -646,8 +646,8 @@ export default function Home() {
                               <div
                                 key={i}
                                 style={{
-                                  gridColumn: `span ${el.grid.w}`,
-                                  gridRow: `span ${el.grid.h}`,
+                                  gridColumn: `span ${el.grid?.w || 4}`,
+                                  gridRow: `span ${el.grid?.h || 1}`,
                                 }}
                                 className="bg-input-bg border border-input-border rounded-2xl p-4 hover:border-purple-500/30 transition-all group/el flex flex-col justify-center"
                               >

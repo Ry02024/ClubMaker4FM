@@ -3,3 +3,5 @@ opencv-python
 numpy
 pygetwindow
 pywinauto
+google-genai
+python-dotenv

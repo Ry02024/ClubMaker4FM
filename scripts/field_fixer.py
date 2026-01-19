@@ -35,7 +35,7 @@ def handle_confirmation_dialog(app):
                     if save_btn.exists():
                         print(f"  > [Dialog: Save] Clicking Save/Yes", file=sys.stderr)
                         save_btn.click_input()
-                        time.sleep(0.5)
+                        time.sleep(0.2)  # 待機時間を短縮（0.5秒→0.2秒）
                         return True
                 
                 # 2. 名前重複エラーなどの警告の場合
@@ -44,7 +44,7 @@ def handle_confirmation_dialog(app):
                     if ok_btn.exists():
                         print(f"  > [CRITICAL ERROR] Duplicate name or invalid name detected: {content_text}", file=sys.stderr)
                         ok_btn.click_input()
-                        time.sleep(0.5)
+                        time.sleep(0.2)  # 待機時間を短縮（0.5秒→0.2秒）
                         # 重複エラー時は「異常」として即座に中断フラグを返す
                         return "ABORT_ERROR"
 
@@ -53,7 +53,7 @@ def handle_confirmation_dialog(app):
                 if ok_btn.exists():
                     print(f"  > [Dialog: Info] Clicking 'OK/Close'", file=sys.stderr)
                     ok_btn.click_input()
-                    time.sleep(0.5)
+                    time.sleep(0.2)  # 待機時間を短縮（0.5秒→0.2秒）
                     return True
                     
     except Exception as e:
@@ -74,17 +74,25 @@ def select_field_by_name(dialog_spec, field_name):
         # リストの一番上へ移動
         import pyautogui
         pyautogui.press('home')
-        time.sleep(0.3)
+        time.sleep(0.1)  # 待機時間を短縮（0.3秒→0.1秒）
         
         max_search = 300 # フィールド総数に応じた上限
+        seen_items = set()  # 重複チェック用（高速化）
         
         for i in range(max_search):
             # 現在見えている(UIAで取得可能な)DataItemから、名前が一致するものを探す
-            # 1行ずつDownキーで送るため、常に現在の行はDataItemとして取得できるはず
             items = field_list.descendants(control_type="DataItem")
+            if not items:
+                items = field_list.children(control_type="DataItem")
             
             for item in items:
                 try:
+                    # 重複チェック（同じアイテムを複数回処理しない）
+                    item_id = id(item)
+                    if item_id in seen_items:
+                        continue
+                    seen_items.add(item_id)
+                    
                     cells = item.children()
                     if not cells: continue
                     name_nodes = cells[0].descendants(control_type="Text")
@@ -95,7 +103,7 @@ def select_field_by_name(dialog_spec, field_name):
                         # 名前が一致したら選択する
                         try:
                             item.select() # SelectionItem pattern
-                            time.sleep(0.1)
+                            time.sleep(0.05)  # 待機時間を短縮（0.1秒→0.05秒）
                         except:
                             item.click_input()
                         
@@ -108,9 +116,14 @@ def select_field_by_name(dialog_spec, field_name):
                         return True
                 except: continue
 
-            # 次の行へ
-            pyautogui.press('down')
-            time.sleep(0.05)
+            # 高速スクロール: PageDownで一度に複数行スクロール
+            # 最初の数回はPageDown、その後は調整
+            if i < 3:
+                pyautogui.press('pagedown')
+                time.sleep(0.02)  # 待機時間を大幅に短縮（0.05秒→0.02秒）
+            else:
+                pyautogui.press('pagedown')
+                time.sleep(0.02)
             
         return False
     except Exception as e:
@@ -158,7 +171,7 @@ def fix_single_field(dialog_spec, old_name, new_name, new_type=None, comment="AI
         try:
             name_edit.set_focus()
             name_edit.set_text(new_name) # 速くて確実
-            time.sleep(0.2)
+            time.sleep(0.1)  # 待機時間を短縮（0.2秒→0.1秒）
             if name_edit.window_text() == new_name or name_edit.get_value() == new_name:
                 entered_success = True
         except: pass
@@ -167,11 +180,11 @@ def fix_single_field(dialog_spec, old_name, new_name, new_type=None, comment="AI
             # フォールバック: キー操作
             print("  > Direct entry failed. Falling back to type_keys...", file=sys.stderr)
             name_edit.click_input()
-            time.sleep(0.1)
+            time.sleep(0.05)  # 待機時間を短縮（0.1秒→0.05秒）
             name_edit.type_keys("^a{BACKSPACE}", with_spaces=True)
-            time.sleep(0.1)
+            time.sleep(0.05)  # 待機時間を短縮（0.1秒→0.05秒）
             name_edit.type_keys(new_name, with_spaces=True)
-            time.sleep(0.3)
+            time.sleep(0.1)  # 待機時間を短縮（0.3秒→0.1秒）
         
         # 入力後の値を最終ダブルチェック
         entered_val = name_edit.window_text() or name_edit.get_value() or ""
@@ -183,7 +196,7 @@ def fix_single_field(dialog_spec, old_name, new_name, new_type=None, comment="AI
              pyautogui.hotkey('ctrl', 'a')
              pyautogui.press('backspace')
              pyautogui.typewrite(new_name)
-             time.sleep(0.5)
+             time.sleep(0.2)  # 待機時間を短縮（0.5秒→0.2秒）
 
         # 4. 型変更
         if new_type:
@@ -203,7 +216,7 @@ def fix_single_field(dialog_spec, old_name, new_name, new_type=None, comment="AI
                 type_combo.set_focus()
                 # 警告: ここで Enter を送ると「作成」が実行される可能性があるため、キーのみ送る
                 type_combo.type_keys(key)
-                time.sleep(0.3)
+                time.sleep(0.1)  # 待機時間を短縮（0.3秒→0.1秒）
             except Exception as e:
                 print(f"  > Warning: Type change failed: {e}", file=sys.stderr)
         
@@ -214,7 +227,7 @@ def fix_single_field(dialog_spec, old_name, new_name, new_type=None, comment="AI
                 comment_edit.set_focus()
                 # 確実にクリアしてからセット
                 comment_edit.set_text(comment)
-                time.sleep(0.2)
+                time.sleep(0.1)  # 待機時間を短縮（0.2秒→0.1秒）
         except: pass
         
         # 6. 変更確定
@@ -239,11 +252,11 @@ def fix_single_field(dialog_spec, old_name, new_name, new_type=None, comment="AI
             # 日本語版の変更ショートカットは Alt+M (修整/Modify) の場合がある
             print(f"  > Fallback: Sending Alt+M (Japanese Change shortcut)...", file=sys.stderr)
             dialog_spec.type_keys("%m")
-            time.sleep(0.3)
+            time.sleep(0.1)  # 待機時間を短縮（0.3秒→0.1秒）
             # または Alt+A (Change)
             dialog_spec.type_keys("%a")
         
-        time.sleep(0.8) # 変更の反映待ち
+        time.sleep(0.3)  # 変更の反映待ち（0.8秒→0.3秒）
         
         # 7. 完了確認 (Editボックスがクリアされるか、次の行が選択されるかなど)
         # FileMakerでは「変更」を押すと、通常入力エリアが空になるか、引き続き選択されている
@@ -304,15 +317,15 @@ def batch_fix(fix_list):
                         if not fields_tab.is_selected():
                             print(f"  > Selecting 'Fields' tab...", file=sys.stderr)
                             fields_tab.click_input()
-                            time.sleep(0.8)
+                            time.sleep(0.3)  # 待機時間を短縮（0.8秒→0.3秒）
                     else:
                         # フォールバック: キー送信
                         dialog_spec.type_keys("%f")
-                        time.sleep(0.5)
+                        time.sleep(0.2)  # 待機時間を短縮（0.5秒→0.2秒）
             except Exception as e:
                 print(f"  > [Tab Selection Warning] {e}. Trying Atl+F...", file=sys.stderr)
                 dialog_spec.type_keys("%f")
-                time.sleep(0.5)
+                time.sleep(0.2)  # 待機時間を短縮（0.5秒→0.2秒）
 
             new_type = fix.get("new_type", None)
             comment = fix.get("comment", "ClubMaker最適化")
@@ -328,10 +341,10 @@ def batch_fix(fix_list):
                 print("CRITICAL: Aborting due to duplicate name error.", file=sys.stderr)
                 fm_utils.update_overlay("エラー発生: 名前重複。中断します。")
                 break
-            time.sleep(0.5) 
+            time.sleep(0.2)  # 待機時間を短縮（0.5秒→0.2秒） 
         
         fm_utils.update_overlay("完了しました！")
-        time.sleep(1.5)
+        time.sleep(0.5)  # 待機時間を短縮（1.5秒→0.5秒）
         return {"success": True, "total": len(fix_list), "succeeded": success_count, "errors": errors}
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -340,12 +353,41 @@ def batch_fix(fix_list):
         fm_utils.set_input_block(False)
 
 if __name__ == "__main__":
-    if len(sys.argv) >= 2:
-        try:
-            fixes = json.loads(sys.argv[1])
-            result = batch_fix(fixes)
-            print(json.dumps(result, ensure_ascii=True))
-        except:
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Fix FileMaker fields')
+    parser.add_argument('--file', type=str, help='Path to JSON file containing fixes list')
+    parser.add_argument('data', nargs='?', help='JSON string (deprecated, use --file instead)')
+    
+    args = parser.parse_args()
+    
+    try:
+        if args.file:
+            # 一時ファイルから読み取る
+            with open(args.file, 'r', encoding='utf-8') as f:
+                fixes = json.load(f)
+        elif args.data:
+            # 後方互換性のため、コマンドライン引数もサポート
+            fixes = json.loads(args.data)
+        else:
+            print(json.dumps({"success": False, "error": "No input provided. Use --file option or provide JSON string."}, ensure_ascii=True))
             sys.exit(1)
-    else:
+        
+        result = batch_fix(fixes)
+        print(json.dumps(result, ensure_ascii=True))
+    except FileNotFoundError as e:
+        print(json.dumps({"success": False, "error": f"File not found: {e}"}, ensure_ascii=True))
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(json.dumps({"success": False, "error": f"Invalid JSON: {e}"}, ensure_ascii=True))
+        sys.exit(1)
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(json.dumps({
+            "success": False,
+            "error": f"Unexpected error: {str(e)}",
+            "traceback": error_details
+        }, ensure_ascii=True))
+        print(f"Error details: {error_details}", file=sys.stderr)
         sys.exit(1)

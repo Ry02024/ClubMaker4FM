@@ -54,25 +54,27 @@ def get_existing_fields():
                         break
         except: pass
         
-        # 2. スクロールしながら取得
+        # 2. スクロールしながら取得（高速化版）
         grid = dialog_spec.child_window(auto_id="IDC_DEFFIELDS_FIELD_LIST", control_type="DataGrid")
         grid.set_focus()
         pyautogui.press('home')
-        time.sleep(0.5)
+        time.sleep(0.2)  # 初期待機時間を短縮
 
         # 取得したフィールドの順序と内容を保持
         ordered_fields = []
+        seen_names = set()  # 高速な重複チェック用
         
-        # 最大ループ回数を決定
+        # 最大ループ回数を決定（PageDown使用により大幅に削減）
         if total_expected == 0:
-             # 明示的に0件とわかった場合 -> ほぼループ不要だが、念のため2回
              max_loops = 2
         elif total_expected > 0:
-             # 件数がわかっている場合 -> ある程度余裕を持たせる
-             max_loops = max(total_expected * 2, 20)
+             # PageDownで一度に10-15行スクロールするため、ループ回数を大幅に削減
+             # 見える行数が約10-15行と仮定し、余裕を持たせる
+             max_loops = max((total_expected // 12) + 3, 10)
         else:
-             # 検出失敗 (-1) の場合 -> 安全策で多めに回す（以前の挙動に近い）
-             max_loops = 50
+             max_loops = 20  # 検出失敗時も削減
+        
+        consecutive_no_new = 0  # 連続して新規フィールドが見つからない回数
         
         for i in range(max_loops):
             fm_utils.update_overlay(f"読み取り中: {len(ordered_fields)} / {total_expected if total_expected > 0 else '??'}")
@@ -96,7 +98,7 @@ def get_existing_fields():
                         t_text = ""
                         
                         if len(cells) >= 1:
-                            # Cell 0 から名前
+                            # Cell 0 から名前（高速化: descendantsを1回だけ呼び出し）
                             n_nodes = cells[0].descendants(control_type="Text")
                             if n_nodes:
                                 n_text = " ".join([n.window_text() for n in n_nodes if n.window_text()]).strip()
@@ -104,7 +106,7 @@ def get_existing_fields():
                                 n_text = (cells[0].window_text() or "").strip()
                         
                         if len(cells) >= 2:
-                            # Cell 1 から型
+                            # Cell 1 から型（高速化: descendantsを1回だけ呼び出し）
                             t_nodes = cells[1].descendants(control_type="Text")
                             if t_nodes:
                                 t_text = " ".join([n.window_text() for n in t_nodes if n.window_text()]).strip()
@@ -118,12 +120,15 @@ def get_existing_fields():
                                 n_text = parts[1]
                                 t_text = parts[2]
 
-                        if n_text and not any(f["name"] == n_text for f in ordered_fields):
-                            # ヘッダ系の文字列を「完全一致」で除外 (名前_1 などを誤って消さないため)
+                        # 高速な重複チェック（setを使用）
+                        if n_text and n_text not in seen_names:
+                            # ヘッダ系の文字列を「完全一致」で除外
                             if n_text not in ["名前", "フィールド名", "型", "タイプ", "オプション", "オプション / コメント", "並べ替え"]:
                                 print(f"    - Added: '{n_text}' ({t_text})", file=sys.stderr)
                                 ordered_fields.append({"name": n_text, "type": t_text})
+                                seen_names.add(n_text)
                                 found_new_in_any_item = True
+
                     except: continue
 
             except Exception as e:
@@ -133,10 +138,27 @@ def get_existing_fields():
             if total_expected > 0 and len(ordered_fields) >= total_expected:
                 print(f"  > Reached expected total: {total_expected}", file=sys.stderr)
                 break
+            
+            # 新規フィールドが見つからなかった場合のカウント
+            if not found_new_in_any_item:
+                consecutive_no_new += 1
+                # 3回連続で新規が見つからなければ終了
+                if consecutive_no_new >= 3:
+                    print(f"  > No new fields found for 3 consecutive loops, stopping", file=sys.stderr)
+                    break
+            else:
+                consecutive_no_new = 0
                 
-            # 次へ移動
-            pyautogui.press('down')
-            time.sleep(0.1)
+            # 高速スクロール: PageDownで一度に10-15行スクロール
+            # 最初の数回はPageDown、その後は調整
+            if i < 2:
+                # 最初はPageDownで大きくスクロール
+                pyautogui.press('pagedown')
+                time.sleep(0.03)  # 待機時間を3倍短縮（0.1秒→0.03秒）
+            else:
+                # その後もPageDownを使用（より効率的）
+                pyautogui.press('pagedown')
+                time.sleep(0.03)  # 待機時間を3倍短縮
 
         fm_utils.update_overlay(f"読み取り完了: {len(ordered_fields)}件")
         return {"success": True, "fields": ordered_fields}
